@@ -7,10 +7,12 @@ import {
   Save, 
   X, 
   HeartPulse,
-  LayoutGrid
+  LayoutGrid,
+  Loader2
 } from 'lucide-react';
 import { CareLine } from '../App';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
+import pb from '../lib/pocketbase';
 
 const PRESET_COLORS = [
   '#3b82f6', // blue
@@ -29,6 +31,7 @@ interface SettingsProps {
 
 export function Settings({ careLines, setCareLines }: SettingsProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '', color: PRESET_COLORS[0] });
 
@@ -36,23 +39,47 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [lineToDelete, setLineToDelete] = useState<CareLine | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setCareLines(careLines.map(line => 
-        line.id === editingId ? { ...line, ...formData, description: '' } : line
-      ));
-      setEditingId(null);
-    } else {
-      const newLine: CareLine = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...formData,
-        description: ''
-      };
-      setCareLines([...careLines, newLine]);
+    setIsSubmitting(true);
+    
+    try {
+      if (editingId) {
+        // Update no PocketBase
+        const updatedRecord = await pb.collection('atividadeexternadaps53_linhasdecuidado').update(editingId, {
+          name: formData.name,
+          color: formData.color,
+          description: '' // Mantendo compatibilidade com o schema
+        });
+
+        setCareLines(careLines.map(line => 
+          line.id === editingId ? { ...line, name: updatedRecord.name, color: updatedRecord.color } : line
+        ));
+        setEditingId(null);
+      } else {
+        // Create no PocketBase
+        const newRecord = await pb.collection('atividadeexternadaps53_linhasdecuidado').create({
+          name: formData.name,
+          color: formData.color,
+          description: ''
+        });
+
+        const newLine: CareLine = {
+          id: newRecord.id,
+          name: newRecord.name,
+          color: newRecord.color,
+          description: ''
+        };
+        setCareLines([...careLines, newLine]);
+      }
+      setFormData({ name: '', color: PRESET_COLORS[0] });
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error("Erro ao salvar linha de cuidado:", error);
+      alert("Erro ao salvar no banco de dados. Verifique sua conexão ou permissões.");
+    } finally {
+      setIsSubmitting(false);
     }
-    setFormData({ name: '', color: PRESET_COLORS[0] });
-    setIsFormOpen(false);
   };
 
   const handleEdit = (line: CareLine) => {
@@ -66,10 +93,16 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (lineToDelete) {
-      setCareLines(careLines.filter(line => line.id !== lineToDelete.id));
-      setLineToDelete(null);
+      try {
+        await pb.collection('atividadeexternadaps53_linhasdecuidado').delete(lineToDelete.id);
+        setCareLines(careLines.filter(line => line.id !== lineToDelete.id));
+        setLineToDelete(null);
+      } catch (error) {
+        console.error("Erro ao excluir linha de cuidado:", error);
+        alert("Erro ao excluir no banco de dados.");
+      }
     }
   };
 
@@ -235,9 +268,17 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
+                  disabled={isSubmitting}
+                  className="flex-[2] py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {editingId ? 'Salvar' : 'Criar'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    editingId ? 'Salvar Alterações' : 'Criar Linha'
+                  )}
                 </button>
               </div>
             </form>
