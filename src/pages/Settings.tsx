@@ -30,7 +30,7 @@ interface SettingsProps {
 export function Settings({ careLines, setCareLines }: SettingsProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '', color: PRESET_COLORS[0] });
+  const [formData, setFormData] = useState({ name: '', color: PRESET_COLORS[0] });
 
   // Delete confirmation states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -40,22 +40,23 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
     e.preventDefault();
     if (editingId) {
       setCareLines(careLines.map(line => 
-        line.id === editingId ? { ...line, ...formData } : line
+        line.id === editingId ? { ...line, ...formData, description: '' } : line
       ));
       setEditingId(null);
     } else {
       const newLine: CareLine = {
         id: Math.random().toString(36).substr(2, 9),
-        ...formData
+        ...formData,
+        description: ''
       };
       setCareLines([...careLines, newLine]);
     }
-    setFormData({ name: '', description: '', color: PRESET_COLORS[0] });
+    setFormData({ name: '', color: PRESET_COLORS[0] });
     setIsFormOpen(false);
   };
 
   const handleEdit = (line: CareLine) => {
-    setFormData({ name: line.name, description: line.description, color: line.color });
+    setFormData({ name: line.name, color: line.color });
     setEditingId(line.id);
     setIsFormOpen(true);
   };
@@ -98,7 +99,7 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
           <button 
             onClick={() => {
               setEditingId(null);
-              setFormData({ name: '', description: '', color: PRESET_COLORS[0] });
+              setFormData({ name: '', color: PRESET_COLORS[0] });
               setIsFormOpen(true);
             }}
             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
@@ -141,9 +142,6 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
               
               <div className="flex-1">
                 <h4 className="font-black text-lg text-slate-900 mb-2 tracking-tight group-hover:text-slate-700 transition-colors">{line.name}</h4>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 group-hover:text-slate-600 transition-colors">
-                  {line.description}
-                </p>
               </div>
 
               {/* Mobile quick actions */}
@@ -156,6 +154,7 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
               </div>
             </div>
           ))}
+
 
           {careLines.length === 0 && (
             <div className="col-span-full text-center py-20 bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-200">
@@ -204,18 +203,6 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ex: Saúde Mental"
                   className="w-full bg-slate-50 border-2 border-transparent focus:border-slate-900 focus:bg-white rounded-2xl px-5 py-3.5 text-slate-900 font-bold outline-none transition-all placeholder:text-slate-300"
-                />
-              </div>
-
-              <div className="space-y-2.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Descrição</label>
-                <textarea 
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descreva o propósito desta linha..."
-                  rows={3}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-slate-900 focus:bg-white rounded-2xl px-5 py-3.5 text-slate-900 font-bold outline-none transition-all resize-none placeholder:text-slate-300"
                 />
               </div>
 

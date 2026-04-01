@@ -131,7 +131,7 @@ export function Sidebar({ currentPage, onPageChange, onOpenActivitiesForm, isOpe
           </button>
         </div>
 
-        <div className="mt-auto space-y-1 pb-4">
+        <div className="mt-auto space-y-4 pb-2">
           <button 
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 transition-all font-headline text-sm font-medium rounded-lg"
@@ -139,6 +139,16 @@ export function Sidebar({ currentPage, onPageChange, onOpenActivitiesForm, isOpe
             <LogOut size={20} />
             <span>Sair</span>
           </button>
+
+          {/* Rodapé de Créditos - Minimalista e Elegante */}
+          <div className="px-4 py-2 border-t border-white/5 flex flex-col items-center gap-0.5 opacity-40 hover:opacity-100 transition-opacity duration-500 cursor-default group">
+            <p className="text-[10px] font-medium text-white/80 leading-tight tracking-tight text-center">
+              Desenvolvido por <span className="text-white font-bold group-hover:text-blue-400 transition-colors">Fabio Ferreira de Oliveira</span>
+            </p>
+            <p className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em] leading-none text-center">
+              DAPS/CAP5.3
+            </p>
+          </div>
         </div>
       </aside>
     </>

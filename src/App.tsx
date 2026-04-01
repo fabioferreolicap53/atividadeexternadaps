@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopNav } from './components/TopNav';
 import { Professionals } from './pages/Professionals';
@@ -6,6 +6,7 @@ import { Activities } from './pages/Activities';
 import { Dashboard } from './pages/Dashboard';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
+import pb from './lib/pocketbase';
 
 export interface CareLine {
   id: string;
@@ -36,58 +37,82 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>('dashboard');
   const [activitiesFormOpen, setActivitiesFormOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Estado global compartilhado para Profissionais
-  const [professionals, setProfessionals] = useState<Professional[]>([
-    { id: '1', name: 'Dr. Ricardo Mendes', role: 'Diretor de Operações', careLine: 'Hiperdia / Saúde do Idoso' },
-    { id: '2', name: 'Enf. Ana Souza', role: 'Coordenadora de Campo', careLine: 'Saúde da Mulher' },
-    { id: '3', name: 'Beatriz Silveira', role: 'Arquiteta Sênior', careLine: 'Infraestrutura' },
-    { id: '4', name: 'Marcos Vinícius', role: 'Engenheiro Civil', careLine: 'Saúde Mental' },
-  ]);
+  // Estados globais
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [careLines, setCareLines] = useState<CareLine[]>([]);
 
-  // Estado global compartilhado para Atividades
-  const [activities, setActivities] = useState<Activity[]>([
-    { 
-      id: '1', 
-      date: '2026-05-24', 
-      startTime: '08:00', 
-      endTime: '10:00', 
-      location: 'Sala 402', 
-      description: 'Reunião de Alinhamento Estratégico',
-      professionalIds: ['1', '2', '3', '4']
-    },
-    { 
-      id: '2', 
-      date: '2026-05-24', 
-      startTime: '10:30', 
-      endTime: '12:30', 
-      location: 'Zona Sul', 
-      description: 'Vistoria de Campo: Projeto Áquila',
-      professionalIds: ['3', '1']
-    },
-    { 
-      id: '3', 
-      date: '2026-05-24', 
-      startTime: '14:00', 
-      endTime: '16:00', 
-      location: 'Auditório Central', 
-      description: 'Capacitação em Novos Protocolos',
-      professionalIds: ['2']
-    },
-  ]);
+  // Carregar dados do PocketBase
+  useEffect(() => {
+    async function loadData() {
+      if (!isAuthenticated) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Busca paralela das coleções usando os nomes da imagem
+        const [careLinesData, professionalsData, activitiesData] = await Promise.all([
+          pb.collection('atividadeexternadaps53_linhasdecuidado').getFullList(),
+          pb.collection('atividadeexternadaps53_profissionais').getFullList(),
+          pb.collection('atividadeexternadaps53_atividades').getFullList()
+        ]);
 
-  // Estado global compartilhado para Linhas de Cuidado
-  const [careLines, setCareLines] = useState<CareLine[]>([
-    { id: 'Saúde da Mulher', name: 'Saúde da Mulher', description: 'Atendimento especializado feminino', color: '#ec4899' },
-    { id: 'Saúde do Homem', name: 'Saúde do Homem', description: 'Atendimento especializado masculino', color: '#3b82f6' },
-    { id: 'Saúde Mental', name: 'Saúde Mental', description: 'Acompanhamento psicológico e psiquiátrico', color: '#8b5cf6' },
-    { id: 'Saúde da Família', name: 'Saúde da Família', description: 'Atendimento básico preventivo', color: '#10b981' },
-    { id: 'Urgência e Emergência', name: 'Urgência e Emergência', description: 'Atendimento de alta complexidade', color: '#ef4444' },
-  ]);
+        // Mapear Linhas de Cuidado
+        setCareLines(careLinesData.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          color: item.color
+        })));
+
+        // Mapear Profissionais
+        setProfessionals(professionalsData.map(item => ({
+          id: item.id,
+          name: item.name,
+          role: item.role,
+          careLine: item.care_line // Campo Relation no PocketBase
+        })));
+
+        // Mapear Atividades
+        setActivities(activitiesData.map(item => ({
+          id: item.id,
+          date: item.date.split(' ')[0], // Extrai apenas a data do formato ISO/UTC
+          startTime: item.start_time,
+          endTime: item.end_time,
+          location: item.location,
+          description: item.description,
+          professionalIds: item.professionals // Campo Relation (array de IDs)
+        })));
+
+      } catch (error) {
+        console.error("Erro ao sincronizar com PocketBase:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <Login onLogin={() => setIsAuthenticated(true)} />;
   }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin" />
+          <p className="text-white/60 font-headline font-bold text-sm animate-pulse uppercase tracking-widest">
+            Sincronizando DAPS...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
 
   const handlePageChange = (page: 'dashboard' | 'professionals' | 'activities' | 'settings') => {
     setCurrentPage(page);
