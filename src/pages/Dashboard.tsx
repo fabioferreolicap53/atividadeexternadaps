@@ -10,13 +10,15 @@ import {
   AlertCircle,
   User,
   MapPin,
-  FileText
+  FileText,
+  CalendarDays
 } from 'lucide-react';
 import { useState } from 'react';
 import { Timeline } from '../components/Timeline';
 import { RightSidebar } from '../components/RightSidebar';
 import { PremiumDetailModal } from '../components/PremiumDetailModal';
 import { PremiumProfessionalModal } from '../components/PremiumProfessionalModal';
+import { PremiumDatePicker } from '../components/PremiumSelect';
 
 interface Activity {
   id: string;
@@ -52,6 +54,11 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<ProfessionalStatus | null>(null);
   const [isProfModalOpen, setIsProfModalOpen] = useState(false);
+  
+  // Estado para a data selecionada
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
 
   // Mapear profissionais para o estado de presença (TEAM_STATUS) dinamicamente
   const TEAM_STATUS: ProfessionalStatus[] = PROFESSIONALS_MOCK.map(prof => {
@@ -83,24 +90,22 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
   // Lógica para determinar quem está ausente agora com base em atividades externas
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  const currentDate = now.toISOString().split('T')[0];
+  const isToday = selectedDate === now.toISOString().split('T')[0];
 
   // Ordenar atividades do dia para a Timeline
   const dailyActivities = ACTIVITIES_MOCK
-    .filter(a => a.date === currentDate)
+    .filter(a => a.date === selectedDate)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   // Formatação da data por extenso em Português
-  const formattedDate = now.toLocaleDateString('pt-BR', { 
-    day: '2-digit', 
-    month: 'long', 
-    weekday: 'long' 
-  }).replace(/^\w/, (c) => c.toUpperCase());
+  const dateObj = new Date(selectedDate + 'T12:00:00');
+  const weekday = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
+  const dayAndMonth = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
 
   const professionalsWithActivity = TEAM_STATUS.map(prof => {
     const dailyActivities = ACTIVITIES_MOCK.filter(act => 
       act.professionalIds.includes(prof.id) && 
-      act.date === currentDate
+      act.date === selectedDate
     );
     
     const activeActivity = dailyActivities.find(act => 
@@ -110,7 +115,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
 
     return { 
       ...prof, 
-      currentActivity: activeActivity,
+      currentActivity: isToday ? activeActivity : undefined, // Só mostra ausência "agora" se for hoje
       allDailyActivities: dailyActivities 
     };
   });
@@ -130,55 +135,67 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
   return (
     <div className="p-4 md:p-8 space-y-8 md:space-y-12 flex-1 animate-in fade-in duration-500 overflow-x-hidden">
       {/* Hero Heading Section */}
-      <section className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 md:gap-10">
+      <section className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 md:gap-10">
         <div className="max-w-2xl space-y-2">
           <div className="flex items-center gap-3 text-primary-light font-black uppercase tracking-[0.2em] text-[9px] md:text-[10px]">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary-light animate-pulse" />
-            Visão Geral em Tempo Real
+            <div className={`w-1.5 h-1.5 rounded-full bg-primary-light ${isToday ? 'animate-pulse' : ''}`} />
+            {isToday ? 'Visão Geral em Tempo Real' : 'Consulta Histórica/Planejamento'}
           </div>
           <h2 className="text-3xl md:text-5xl font-black font-headline tracking-tight text-on-surface leading-[1.1]">
             Resumo do <span className="text-primary">Dia</span>
           </h2>
-          <p className="text-on-surface-variant font-medium text-base md:text-lg leading-relaxed">
-            {formattedDate} • <span className="text-primary font-bold">{ACTIVITIES_MOCK.filter(a => a.date === currentDate).length} atividades</span> planejadas
-          </p>
+          <div className="text-on-surface-variant font-medium text-base md:text-lg leading-relaxed flex flex-wrap items-center gap-x-1.5">
+            <span>{weekday},</span>
+            <PremiumDatePicker 
+              value={selectedDate}
+              onChange={setSelectedDate}
+              variant="inline"
+              customDisplay={dayAndMonth}
+              align="left"
+            />
+            <span>•</span>
+            <span className="text-primary font-bold">{dailyActivities.length} atividades</span> 
+            <span>planejadas</span>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex gap-3 md:gap-4 w-full xl:w-auto">
-          {/* Ausências Card */}
-          <div className="bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-[140px] md:min-w-[200px] group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex-1">
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-error/10 rounded-full blur-2xl group-hover:bg-error/20 transition-all duration-700"></div>
-            
-            <div className="flex items-center gap-4 mb-3 relative z-10">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-white/[0.03] rounded-[18px] flex items-center justify-center border border-white/10 group-hover:border-error/50 transition-all duration-500 shadow-inner">
-                <UserX size={22} strokeWidth={2.5} className="text-white group-hover:text-error transition-colors" />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4 w-full xl:w-auto">
+          <div className="grid grid-cols-2 lg:flex gap-3 md:gap-4 flex-1 sm:flex-none">
+            {/* Ausências Card */}
+            <div className="bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-[120px] md:min-w-[160px] group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex-1">
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-error/10 rounded-full blur-2xl group-hover:bg-error/20 transition-all duration-700"></div>
+              
+              <div className="flex items-center gap-4 mb-3 relative z-10">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/[0.03] rounded-[15px] flex items-center justify-center border border-white/10 group-hover:border-error/50 transition-all duration-500 shadow-inner">
+                  <UserX size={20} strokeWidth={2.5} className="text-white group-hover:text-error transition-colors" />
+                </div>
+                <span className="text-3xl md:text-4xl font-black text-white tracking-tighter drop-shadow-xl">
+                  {String(allDailyAbsencesCount).padStart(2, '0')}
+                </span>
               </div>
-              <span className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-xl">
-                {String(allDailyAbsencesCount).padStart(2, '0')}
+              
+              <span className="text-[8px] md:text-[9px] font-black text-white/50 uppercase tracking-[0.25em] text-center relative z-10 group-hover:text-white transition-colors">
+                Ausências
               </span>
             </div>
             
-            <span className="text-[9px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.25em] text-center relative z-10 group-hover:text-white transition-colors">
-              Ausências do Dia
-            </span>
-          </div>
-          
-          {/* Ausentes Agora Card */}
-          <div className="bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-[140px] md:min-w-[200px] group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex-1">
-            <div className="absolute -top-10 -right-10 w-24 h-24 bg-warning/10 rounded-full blur-2xl group-hover:bg-warning/20 transition-all duration-700"></div>
-            
-            <div className="flex items-center gap-4 mb-3 relative z-10">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-white/[0.03] rounded-[18px] flex items-center justify-center border border-white/10 group-hover:border-warning/50 transition-all duration-500 shadow-inner">
-                <Clock size={22} strokeWidth={2.5} className="text-white group-hover:text-warning transition-colors" />
+            {/* Ausentes Agora Card */}
+            <div className={`bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-[120px] md:min-w-[160px] group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden flex-1 ${!isToday ? 'opacity-50 grayscale' : ''}`}>
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-warning/10 rounded-full blur-2xl group-hover:bg-warning/20 transition-all duration-700"></div>
+              
+              <div className="flex items-center gap-4 mb-3 relative z-10">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/[0.03] rounded-[15px] flex items-center justify-center border border-white/10 group-hover:border-warning/50 transition-all duration-500 shadow-inner">
+                  <Clock size={20} strokeWidth={2.5} className="text-white group-hover:text-warning transition-colors" />
+                </div>
+                <span className="text-3xl md:text-4xl font-black text-white tracking-tighter drop-shadow-xl">
+                  {String(currentlyAbsentCount).padStart(2, '0')}
+                </span>
               </div>
-              <span className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-xl">
-                {String(currentlyAbsentCount).padStart(2, '0')}
+              
+              <span className="text-[8px] md:text-[9px] font-black text-white/50 uppercase tracking-[0.25em] text-center relative z-10 group-hover:text-white transition-colors">
+                Ausentes Agora
               </span>
             </div>
-            
-            <span className="text-[9px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.25em] text-center relative z-10 group-hover:text-white transition-colors">
-              Ausentes Agora
-            </span>
           </div>
         </div>
       </section>
@@ -188,6 +205,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
           <Timeline 
             onActivityClick={handleOpenDetail} 
             activities={dailyActivities}
+            professionals={PROFESSIONALS_MOCK}
           />
         </div>
         

@@ -322,6 +322,8 @@ interface PremiumDatePickerProps {
   placeholder?: string;
   icon?: any;
   align?: 'left' | 'right';
+  variant?: 'default' | 'inline';
+  customDisplay?: React.ReactNode;
 }
 
 export function PremiumDatePicker({ 
@@ -330,7 +332,9 @@ export function PremiumDatePicker({
   onChange, 
   placeholder = "dd/mm/aaaa",
   icon: Icon = Calendar,
-  align = 'left'
+  align = 'left',
+  variant = 'default',
+  customDisplay
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -415,35 +419,46 @@ export function PremiumDatePicker({
   };
 
   return (
-    <div className={`relative ${label ? 'space-y-2' : ''} ${isOpen ? 'z-[110]' : 'z-10'}`} ref={containerRef}>
-      {label && (
+    <div className={`relative ${label && variant !== 'inline' ? 'space-y-2' : ''} ${isOpen ? 'z-[110]' : 'z-10'} ${variant === 'inline' ? 'inline-block' : ''}`} ref={containerRef}>
+      {label && variant !== 'inline' && (
         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] ml-1">
           {label}
         </label>
       )}
       
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-center gap-3 bg-white border-[2.5px] transition-all rounded-2xl h-[56px] px-4 shadow-sm cursor-pointer group ${
-          isOpen ? 'border-brand-dark ring-4 ring-brand-dark/5' : 'border-slate-200 hover:border-slate-300'
-        }`}
-      >
-        <Icon 
-          size={18} 
-          strokeWidth={2.5} 
-          className={`transition-colors shrink-0 ${isOpen ? 'text-brand-dark' : 'text-slate-400 group-hover:text-brand-dark'}`} 
-        />
-        
-        <span className={`text-sm font-bold whitespace-nowrap overflow-hidden truncate ${displayValue ? 'text-slate-900' : 'text-slate-400'}`}>
-          {displayValue || placeholder}
-        </span>
+      {variant === 'inline' ? (
+        <button 
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={`inline-flex items-center gap-1 text-primary hover:text-primary-dark font-medium cursor-pointer transition-all rounded-md hover:bg-primary/5 px-1 -mx-1 focus:outline-none ${isOpen ? 'bg-primary/5' : ''}`}
+        >
+          {customDisplay || displayValue || placeholder}
+          <ChevronDown size={18} strokeWidth={2.5} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+      ) : (
+        <div 
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full flex items-center justify-center gap-3 bg-white border-[2.5px] transition-all rounded-2xl h-[56px] px-4 shadow-sm cursor-pointer group ${
+            isOpen ? 'border-brand-dark ring-4 ring-brand-dark/5' : 'border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <Icon 
+            size={18} 
+            strokeWidth={2.5} 
+            className={`transition-colors shrink-0 ${isOpen ? 'text-brand-dark' : 'text-slate-400 group-hover:text-brand-dark'}`} 
+          />
+          
+          <span className={`text-sm font-bold whitespace-nowrap overflow-hidden truncate ${displayValue ? 'text-slate-900' : 'text-slate-400'}`}>
+            {displayValue || placeholder}
+          </span>
 
-        <Calendar 
-          size={16} 
-          strokeWidth={2.5} 
-          className={`transition-colors shrink-0 ${isOpen ? 'text-brand-dark' : 'text-slate-300 group-hover:text-slate-400'}`} 
-        />
-      </div>
+          <Calendar 
+            size={16} 
+            strokeWidth={2.5} 
+            className={`transition-colors shrink-0 ${isOpen ? 'text-brand-dark' : 'text-slate-300 group-hover:text-slate-400'}`} 
+          />
+        </div>
+      )}
 
       {isOpen && (
         <div className={`absolute z-[100] mt-2 bg-white rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 p-4 md:p-5 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[300px] md:min-w-[320px] ${align === 'right' ? 'right-0 md:right-0' : 'left-0 md:left-0'} max-sm:fixed max-sm:inset-x-4 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:mt-0`}>

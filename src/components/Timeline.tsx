@@ -1,4 +1,4 @@
-import { Clock, ChevronLeft, ChevronRight, AlertTriangle, Users, MapPin } from 'lucide-react';
+import { Clock, AlertTriangle, Users, MapPin } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -10,12 +10,19 @@ interface Activity {
   professionalIds: string[];
 }
 
+interface Professional {
+  id: string;
+  name: string;
+  role: string;
+}
+
 interface TimelineProps {
   onActivityClick?: (activity: Activity) => void;
   activities: Activity[];
+  professionals: Professional[];
 }
 
-export function Timeline({ onActivityClick, activities }: TimelineProps) {
+export function Timeline({ onActivityClick, activities, professionals }: TimelineProps) {
   // Ordenar atividades por horário de início
   const sortedActivities = [...activities].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
@@ -33,14 +40,6 @@ export function Timeline({ onActivityClick, activities }: TimelineProps) {
           <h3 className="text-sm md:text-base font-black font-headline text-white uppercase tracking-tight">
             Fluxo de Atividades
           </h3>
-        </div>
-        <div className="flex gap-2">
-          <button className="p-2 bg-white/10 rounded-xl hover:bg-primary/20 hover:text-primary-light text-white transition-all duration-300 border border-white/10">
-            <ChevronLeft size={16} strokeWidth={3} />
-          </button>
-          <button className="p-2 bg-white/10 rounded-xl hover:bg-primary/20 hover:text-primary-light text-white transition-all duration-300 border border-white/10">
-            <ChevronRight size={16} strokeWidth={3} />
-          </button>
         </div>
       </div>
 
@@ -110,7 +109,17 @@ export function Timeline({ onActivityClick, activities }: TimelineProps) {
                     </span>
                     <span className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl border transition-all duration-500 ${isActive ? 'bg-primary/10 border-primary/20 text-primary-light' : 'bg-white/5 border-white/5'}`}>
                       <Users size={16} className={isActive ? 'text-primary-light' : 'text-white/30'} /> 
-                      {activity.professionalIds.length} Profissionais
+                      <div className="flex flex-wrap gap-1">
+                        {activity.professionalIds.map((id, i) => {
+                          const prof = professionals.find(p => p.id === id);
+                          return (
+                            <span key={id} className="whitespace-nowrap">
+                              {prof?.name || 'Profissional'}
+                              {i < activity.professionalIds.length - 1 && ","}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </span>
                   </div>
                 </div>
