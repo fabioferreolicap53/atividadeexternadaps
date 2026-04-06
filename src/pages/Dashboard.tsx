@@ -133,20 +133,20 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
   ).length;
 
   return (
-    <div className="p-4 md:p-8 space-y-8 md:space-y-12 flex-1 animate-in fade-in duration-500 overflow-x-hidden">
-      <div className="grid grid-cols-12 gap-8 md:gap-10">
+    <div className="p-3 sm:p-4 md:p-8 space-y-6 sm:space-y-8 md:space-y-12 flex-1 animate-in fade-in duration-500 overflow-x-hidden">
+      <div className="grid grid-cols-12 gap-6 md:gap-10">
         {/* Left Column: Title + Timeline */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col space-y-8 md:space-y-12">
+        <div className="col-span-12 lg:col-span-8 flex flex-col space-y-6 md:space-y-10">
           {/* Hero Heading Section */}
-          <div className="max-w-2xl space-y-2">
-            <div className="flex items-center gap-3 text-primary-light font-black uppercase tracking-[0.2em] text-[9px] md:text-[10px]">
+          <div className="max-w-2xl space-y-3 sm:space-y-2">
+            <div className="flex items-center gap-2.5 text-primary-light font-black uppercase tracking-[0.2em] text-[8px] sm:text-[9px] md:text-[10px]">
               <div className={`w-1.5 h-1.5 rounded-full bg-primary-light ${isToday ? 'animate-pulse' : ''}`} />
               {isToday ? 'Visão Geral em Tempo Real' : 'Consulta Histórica/Planejamento'}
             </div>
-            <h2 className="text-3xl md:text-5xl font-black font-headline tracking-tight text-on-surface leading-[1.1]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-headline tracking-tight text-on-surface leading-[1.1]">
               Resumo do <span className="text-primary">Dia</span>
             </h2>
-            <div className="text-on-surface-variant font-medium text-base md:text-lg leading-relaxed flex flex-wrap items-center gap-x-1.5">
+            <div className="text-on-surface-variant font-medium text-sm sm:text-base md:text-lg leading-relaxed flex flex-wrap items-center gap-x-1.5">
               <span>{weekday},</span>
               <PremiumDatePicker 
                 value={selectedDate}
@@ -170,9 +170,9 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
 
         {/* Right Column: Cards + RightSidebar */}
         <div className="col-span-12 lg:col-span-4 flex flex-col space-y-6 md:space-y-8">
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4">
             {/* Ausências Card */}
-            <div className="bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-0 group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
+            <div className="bg-brand-dark p-5 sm:p-6 md:p-7 rounded-[28px] sm:rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-0 group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-24 h-24 bg-error/10 rounded-full blur-2xl group-hover:bg-error/20 transition-all duration-700"></div>
               
               <div className="flex items-center gap-4 mb-3 relative z-10">
@@ -190,7 +190,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
             </div>
             
             {/* Ausentes Agora Card */}
-            <div className={`bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-0 group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden ${!isToday ? 'opacity-50 grayscale' : ''}`}>
+            <div className={`bg-brand-dark p-5 sm:p-6 md:p-7 rounded-[28px] sm:rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col items-center justify-center min-w-0 group hover:-translate-y-1 transition-all duration-500 relative overflow-hidden ${!isToday ? 'opacity-50 grayscale' : ''}`}>
               <div className="absolute -top-10 -right-10 w-24 h-24 bg-warning/10 rounded-full blur-2xl group-hover:bg-warning/20 transition-all duration-700"></div>
               
               <div className="flex items-center gap-4 mb-3 relative z-10">
@@ -208,13 +208,15 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
             </div>
           </div>
 
-          <RightSidebar 
-            absentProfessionals={absentProfessionalsList} 
-            onActivityClick={handleOpenDetail}
-            onProfessionalClick={handleOpenProfDetail}
-            className="flex-1"
-            selectedDate={selectedDate}
-          />
+          <div className="flex-1">
+            <RightSidebar 
+              absentProfessionals={absentProfessionalsList} 
+              onActivityClick={handleOpenDetail}
+              onProfessionalClick={handleOpenProfDetail}
+              className="h-full"
+              selectedDate={selectedDate}
+            />
+          </div>
         </div>
       </div>
 
