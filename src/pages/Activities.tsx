@@ -11,10 +11,12 @@ import {
   CalendarPlus,
   Search,
   Users,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { PremiumSelect, PremiumDatePicker, PremiumTimePicker, PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
+import pb from '../lib/pocketbase';
 
 interface Activity {
   id: string;
@@ -48,6 +50,8 @@ export function Activities({
 }: ActivitiesProps) {
   const [isFormOpen, setIsFormOpen] = useState(initialFormOpen);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Delete confirmation states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -124,27 +128,46 @@ export function Activities({
     setEditingId(null);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!date || !startTime || !endTime || !location || !description || professionalIds.length === 0) return;
 
-    if (editingId) {
-      setActivities((prev: Activity[]) => prev.map((a: Activity) => 
-        a.id === editingId ? { ...a, date, startTime, endTime, location, description, professionalIds } : a
-      ));
-    } else {
-      const newActivity: Activity = {
-        id: Math.random().toString(36).substring(2, 11),
-        date,
-        startTime,
-        endTime,
-        location,
-        description,
-        professionalIds
+    setIsSaving(true);
+    try {
+      const activityData = {
+        date: date + " 12:00:00.000Z", // Formato esperado pelo PocketBase para campos date
+        start_time: startTime,
+        end_time: endTime,
+        location: location,
+        description: description,
+        professionals: professionalIds
       };
-      setActivities((prev: Activity[]) => [...prev, newActivity]);
+
+      if (editingId) {
+        const record = await pb.collection('atividadeexternadaps53_atividades').update(editingId, activityData);
+        setActivities((prev: Activity[]) => prev.map((a: Activity) => 
+          a.id === editingId ? { ...a, date, startTime, endTime, location, description, professionalIds } : a
+        ));
+      } else {
+        const record = await pb.collection('atividadeexternadaps53_atividades').create(activityData);
+        const newActivity: Activity = {
+          id: record.id,
+          date,
+          startTime,
+          endTime,
+          location,
+          description,
+          professionalIds
+        };
+        setActivities((prev: Activity[]) => [...prev, newActivity]);
+      }
+      handleCloseForm();
+    } catch (error) {
+      console.error("Erro ao salvar atividade no PocketBase:", error);
+      alert("Erro ao salvar atividade. Verifique a conexão.");
+    } finally {
+      setIsSaving(false);
     }
-    handleCloseForm();
   };
 
   const handleDelete = (activity: Activity) => {
@@ -152,10 +175,20 @@ export function Activities({
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (activityToDelete) {
-      setActivities((prev: Activity[]) => prev.filter((a: Activity) => a.id !== activityToDelete.id));
-      setActivityToDelete(null);
+      setIsDeleting(true);
+      try {
+        await pb.collection('atividadeexternadaps53_atividades').delete(activityToDelete.id);
+        setActivities((prev: Activity[]) => prev.filter((a: Activity) => a.id !== activityToDelete.id));
+        setActivityToDelete(null);
+        setIsDeleteModalOpen(false);
+      } catch (error) {
+        console.error("Erro ao excluir atividade no PocketBase:", error);
+        alert("Erro ao excluir atividade.");
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -426,6 +459,7 @@ export function Activities({
         title="Excluir Agendamento?"
         description="Você está prestes a remover este agendamento do sistema. Esta ação requer atenção especial."
         itemName={activityToDelete ? `${activityToDelete.description} (${activityToDelete.date.split('-').reverse().join('/')})` : ''}
+        isDeleting={isDeleting}
       />
 
       {/* Form Modal */}
@@ -522,10 +556,15 @@ export function Activities({
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3.5 md:py-4 px-6 rounded-2xl font-bold text-brand-dark bg-white hover:bg-white/90 shadow-xl shadow-black/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  disabled={isSaving}
+                  className="flex-1 py-3.5 md:py-4 px-6 rounded-2xl font-bold text-brand-dark bg-white hover:bg-white/90 shadow-xl shadow-black/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Save size={20} />
-                  {editingId ? 'Salvar Alterações' : 'Confirmar Agendamento'}
+                  {isSaving ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <Save size={20} />
+                  )}
+                  {isSaving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Confirmar Agendamento'}
                 </button>
               </div>
             </form>

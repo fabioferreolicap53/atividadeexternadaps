@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Trash2, X, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Trash2, X, ShieldAlert, Loader2 } from 'lucide-react';
 
 interface PremiumConfirmModalProps {
   isOpen: boolean;
@@ -8,6 +8,7 @@ interface PremiumConfirmModalProps {
   title: string;
   description: string;
   itemName?: string;
+  isDeleting?: boolean;
 }
 
 export function PremiumConfirmModal({ 
@@ -15,8 +16,9 @@ export function PremiumConfirmModal({
   onClose, 
   onConfirm, 
   title, 
-  description,
-  itemName 
+  description, 
+  itemName,
+  isDeleting = false
 }: PremiumConfirmModalProps) {
   const [step, setStep] = useState(1);
 
@@ -92,11 +94,16 @@ export function PremiumConfirmModal({
               </button>
             ) : (
               <button 
-                onClick={handleConfirm}
-                className="w-full bg-error text-white hover:bg-error-dark rounded-2xl py-4 font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_12px_30px_rgba(239,68,68,0.3)] animate-bounce-subtle"
+                onClick={onConfirm}
+                disabled={isDeleting}
+                className="w-full bg-error text-white rounded-2xl py-5 font-black uppercase tracking-[0.25em] text-xs transition-all shadow-xl shadow-error/20 hover:bg-error/90 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
               >
-                <Trash2 size={18} strokeWidth={3} />
-                Confirmar e Excluir agora
+                {isDeleting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Trash2 size={18} strokeWidth={3} />
+                )}
+                {isDeleting ? 'Excluindo...' : 'Confirmar e Excluir agora'}
               </button>
             )}
             
