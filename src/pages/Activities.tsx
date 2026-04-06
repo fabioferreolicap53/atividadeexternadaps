@@ -1,10 +1,9 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Calendar, 
   Clock, 
   MapPin, 
   FileText, 
-  Plus, 
   Edit2, 
   Trash2, 
   X, 
@@ -12,10 +11,7 @@ import {
   CalendarPlus,
   Search,
   Users,
-  Filter,
-  ArrowRight,
-  ChevronDown,
-  Check
+  ArrowRight
 } from 'lucide-react';
 import { PremiumSelect, PremiumDatePicker, PremiumTimePicker, PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
@@ -66,10 +62,41 @@ export function Activities({
   // Form states
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('08:00');
-  const [endTime, setEndTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('10:00');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [professionalIds, setProfessionalIds] = useState<string[]>([]);
+
+  // Função para adicionar 2 horas a um horário HH:mm
+  const addTwoHours = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    let newHours = hours + 2;
+    if (newHours >= 24) newHours = 23; // Limita ao final do dia se necessário
+    return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // Função para comparar horários HH:mm
+  const isTimeBefore = (time1: string, time2: string) => {
+    const [h1, m1] = time1.split(':').map(Number);
+    const [h2, m2] = time2.split(':').map(Number);
+    return h1 < h2 || (h1 === h2 && m1 < m2);
+  };
+
+  const handleStartTimeChange = (newTime: string) => {
+    setStartTime(newTime);
+    // Sempre mantém a diferença de 2 horas por padrão
+    const suggestedEndTime = addTwoHours(newTime);
+    setEndTime(suggestedEndTime);
+  };
+
+  const handleEndTimeChange = (newTime: string) => {
+    // Regra: Não permite que o fim seja antes do início
+    if (isTimeBefore(newTime, startTime)) {
+      alert("O horário de término não pode ser anterior ao horário de início.");
+      return;
+    }
+    setEndTime(newTime);
+  };
 
   const handleOpenForm = (activity?: Activity) => {
     if (activity) {
@@ -84,7 +111,7 @@ export function Activities({
       setEditingId(null);
       setDate(new Date().toISOString().split('T')[0]);
       setStartTime('08:00');
-      setEndTime('09:00');
+      setEndTime('10:00');
       setLocation('');
       setDescription('');
       setProfessionalIds([]);
@@ -102,12 +129,12 @@ export function Activities({
     if (!date || !startTime || !endTime || !location || !description || professionalIds.length === 0) return;
 
     if (editingId) {
-      setActivities(prev => prev.map(a => 
+      setActivities((prev: Activity[]) => prev.map((a: Activity) => 
         a.id === editingId ? { ...a, date, startTime, endTime, location, description, professionalIds } : a
       ));
     } else {
       const newActivity: Activity = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: Math.random().toString(36).substring(2, 11),
         date,
         startTime,
         endTime,
@@ -115,7 +142,7 @@ export function Activities({
         description,
         professionalIds
       };
-      setActivities(prev => [...prev, newActivity]);
+      setActivities((prev: Activity[]) => [...prev, newActivity]);
     }
     handleCloseForm();
   };
@@ -127,7 +154,7 @@ export function Activities({
 
   const confirmDelete = () => {
     if (activityToDelete) {
-      setActivities(prev => prev.filter(a => a.id !== activityToDelete.id));
+      setActivities((prev: Activity[]) => prev.filter((a: Activity) => a.id !== activityToDelete.id));
       setActivityToDelete(null);
     }
   };
@@ -140,12 +167,12 @@ export function Activities({
   };
 
   const filteredActivities = useMemo(() => {
-    return activities.filter(a => {
+    return activities.filter((a: Activity) => {
       // Search term
       const matchesSearch = 
         a.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.professionalIds.some(pid => 
+        a.professionalIds.some((pid: string) => 
           PROFESSIONALS_MOCK.find(p => p.id === pid)?.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
@@ -444,7 +471,7 @@ export function Activities({
                   <PremiumTimePicker 
                     label="Horário de Início"
                     value={startTime}
-                    onChange={setStartTime}
+                    onChange={handleStartTimeChange}
                   />
                 </div>
 
@@ -452,7 +479,7 @@ export function Activities({
                   <PremiumTimePicker 
                     label="Horário de Término"
                     value={endTime}
-                    onChange={setEndTime}
+                    onChange={handleEndTimeChange}
                   />
                 </div>
 
