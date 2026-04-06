@@ -73,25 +73,23 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
 
     try {
       const data = {
-        name,
-        // No PocketBase, se o campo for Relation (Multiple), enviamos um array de IDs.
-        // Se for Relation (Single), enviamos apenas um ID.
-        // Pela Imagem 1, o campo 'field' é Multiple.
-        field: selectedCareLines
+        name: name.trim(),
+        role: 'Profissional DAPS', // Valor padrão para campo obrigatório no banco
+        field: selectedCareLines // Usando 'field' conforme visto na sua imagem anterior da coleção
       };
 
       if (editingId) {
         const updatedRecord = await pb.collection('atividadeexternadaps53_profissionais').update(editingId, data);
         setProfessionals(prev => prev.map(p => 
-          p.id === editingId ? { ...p, name: updatedRecord.name, careLine: updatedRecord.field[0] } : p
+          p.id === editingId ? { ...p, name: updatedRecord.name, careLine: updatedRecord.field ? updatedRecord.field[0] : undefined } : p
         ));
       } else {
         const newRecord = await pb.collection('atividadeexternadaps53_profissionais').create(data);
         const newProf: Professional = {
           id: newRecord.id,
           name: newRecord.name,
-          role: '',
-          careLine: newRecord.field[0]
+          role: newRecord.role,
+          careLine: newRecord.field ? newRecord.field[0] : undefined
         };
         setProfessionals(prev => [...prev, newProf]);
       }
