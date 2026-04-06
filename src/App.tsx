@@ -33,11 +33,24 @@ export interface Professional {
 }
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>('dashboard');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('daps_auth') === 'true';
+  });
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>(() => {
+    return (localStorage.getItem('daps_current_page') as any) || 'dashboard';
+  });
   const [activitiesFormOpen, setActivitiesFormOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Persistir estado de autenticação e página atual
+  useEffect(() => {
+    localStorage.setItem('daps_auth', isAuthenticated.toString());
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('daps_current_page', currentPage);
+  }, [currentPage]);
 
   // Estados globais
   const [professionals, setProfessionals] = useState<Professional[]>([]);
