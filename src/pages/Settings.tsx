@@ -48,8 +48,7 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
         // Update no PocketBase
         const updatedRecord = await pb.collection('atividadeexternadaps53_linhasdecuidado').update(editingId, {
           name: formData.name,
-          color: formData.color,
-          description: '' // Mantendo compatibilidade com o schema
+          color: formData.color
         });
 
         setCareLines(careLines.map(line => 
@@ -60,15 +59,14 @@ export function Settings({ careLines, setCareLines }: SettingsProps) {
         // Create no PocketBase
         const newRecord = await pb.collection('atividadeexternadaps53_linhasdecuidado').create({
           name: formData.name,
-          color: formData.color,
-          description: ''
+          color: formData.color
         });
 
         const newLine: CareLine = {
           id: newRecord.id,
           name: newRecord.name,
           color: newRecord.color,
-          description: ''
+          description: '' // Mantendo apenas no tipo para compatibilidade com o App.tsx
         };
         setCareLines([...careLines, newLine]);
       }

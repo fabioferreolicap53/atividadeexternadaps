@@ -72,7 +72,7 @@ export default function App() {
           id: item.id,
           name: item.name,
           role: item.role,
-          careLine: item.care_line // Campo Relation no PocketBase
+          careLine: item.field && item.field.length > 0 ? item.field[0] : undefined
         })));
 
         // Mapear Atividades
@@ -145,7 +145,11 @@ export default function App() {
           />
         ) : currentPage === 'professionals' ? (
           <div className="flex-1 overflow-x-hidden">
-            <Professionals careLines={careLines} />
+            <Professionals 
+              professionals={professionals} 
+              setProfessionals={setProfessionals} 
+              careLines={careLines} 
+            />
           </div>
         ) : currentPage === 'settings' ? (
           <div className="flex-1 overflow-x-hidden">

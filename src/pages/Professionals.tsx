@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Users, 
   Plus, 
@@ -9,36 +9,30 @@ import {
   Save, 
   UserPlus,
   Stethoscope,
-  HeartPulse
+  HeartPulse,
+  Loader2
 } from 'lucide-react';
 import { PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
-import { CareLine } from '../App';
-
-interface Professional {
-  id: string;
-  name: string;
-  careLines: string[];
-}
+import { CareLine, Professional } from '../App';
+import pb from '../lib/pocketbase';
 
 interface ProfessionalsProps {
+  professionals: Professional[];
+  setProfessionals: React.Dispatch<React.SetStateAction<Professional[]>>;
   careLines: CareLine[];
 }
 
-export function Professionals({ careLines }: ProfessionalsProps) {
+export function Professionals({ professionals, setProfessionals, careLines }: ProfessionalsProps) {
   // Converter as linhas de cuidado dinâmicas para o formato esperado pelo Select
+  // Usamos o ID da linha de cuidado para salvar no Relation do PocketBase
   const careLineOptions = useMemo(() => 
-    careLines.map(line => ({ id: line.name, name: line.name })), 
+    careLines.map(line => ({ id: line.id, name: line.name })), 
     [careLines]
   );
 
-  const [professionals, setProfessionals] = useState<Professional[]>([
-    { id: '1', name: 'Dr. Ricardo Mendes', careLines: ['Urgência e Emergência', 'Saúde da Família'] },
-    { id: '2', name: 'Enf. Ana Souza', careLines: ['Saúde da Mulher'] },
-    { id: '3', name: 'Dr. Marcos Vinícius', careLines: ['Saúde Mental'] },
-  ]);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
   // Delete confirmation states
@@ -55,7 +49,8 @@ export function Professionals({ careLines }: ProfessionalsProps) {
     if (professional) {
       setEditingId(professional.id);
       setName(professional.name);
-      setSelectedCareLines(professional.careLines);
+      // Se for uma string (id), colocamos num array
+      setSelectedCareLines(professional.careLine ? [professional.careLine] : []);
     } else {
       setEditingId(null);
       setName('');
@@ -71,23 +66,42 @@ export function Professionals({ careLines }: ProfessionalsProps) {
     setSelectedCareLines([]);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    setIsSubmitting(true);
 
-    if (editingId) {
-      setProfessionals(prev => prev.map(p => 
-        p.id === editingId ? { ...p, name, careLines: selectedCareLines } : p
-      ));
-    } else {
-      const newProf: Professional = {
-        id: Math.random().toString(36).substr(2, 9),
+    try {
+      const data = {
         name,
-        careLines: selectedCareLines
+        // No PocketBase, se o campo for Relation (Multiple), enviamos um array de IDs.
+        // Se for Relation (Single), enviamos apenas um ID.
+        // Pela Imagem 1, o campo 'field' é Multiple.
+        field: selectedCareLines
       };
-      setProfessionals(prev => [...prev, newProf]);
+
+      if (editingId) {
+        const updatedRecord = await pb.collection('atividadeexternadaps53_profissionais').update(editingId, data);
+        setProfessionals(prev => prev.map(p => 
+          p.id === editingId ? { ...p, name: updatedRecord.name, careLine: updatedRecord.field[0] } : p
+        ));
+      } else {
+        const newRecord = await pb.collection('atividadeexternadaps53_profissionais').create(data);
+        const newProf: Professional = {
+          id: newRecord.id,
+          name: newRecord.name,
+          role: '',
+          careLine: newRecord.field[0]
+        };
+        setProfessionals(prev => [...prev, newProf]);
+      }
+      handleCloseForm();
+    } catch (error) {
+      console.error("Erro ao salvar profissional:", error);
+      alert("Erro ao salvar profissional no PocketBase. Verifique se as API Rules estão abertas.");
+    } finally {
+      setIsSubmitting(false);
     }
-    handleCloseForm();
   };
 
   const handleDelete = (prof: Professional) => {
@@ -95,16 +109,21 @@ export function Professionals({ careLines }: ProfessionalsProps) {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (profToDelete) {
-      setProfessionals(prev => prev.filter(p => p.id !== profToDelete.id));
-      setProfToDelete(null);
+      try {
+        await pb.collection('atividadeexternadaps53_profissionais').delete(profToDelete.id);
+        setProfessionals(prev => prev.filter(p => p.id !== profToDelete.id));
+        setProfToDelete(null);
+      } catch (error) {
+        console.error("Erro ao excluir profissional:", error);
+        alert("Erro ao excluir profissional.");
+      }
     }
   };
 
   const filteredProfessionals = professionals.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.careLines.some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -172,19 +191,27 @@ export function Professionals({ careLines }: ProfessionalsProps) {
             </div>
 
             <div className="relative z-10 flex-1">
-              <h3 className="text-xl md:text-2xl font-black text-on-surface mb-2 tracking-tight group-hover:text-primary transition-colors">{prof.name}</h3>
+              <h3 className="text-xl md:text-2xl font-black text-on-surface mb-4 tracking-tight group-hover:text-primary transition-colors">{prof.name}</h3>
+              
               <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Linhas de Atuação</p>
               
               <div className="flex flex-wrap gap-2">
-                {prof.careLines.map(line => (
-                  <span 
-                    key={line} 
-                    className="bg-brand-dark/5 text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border border-brand-dark/5 group-hover:border-primary/20 group-hover:bg-primary/5 transition-all"
-                  >
-                    {line}
-                  </span>
-                ))}
-                {prof.careLines.length === 0 && (
+                {prof.careLine ? (
+                  (() => {
+                    const line = careLines.find(l => l.id === prof.careLine);
+                    return line ? (
+                      <span 
+                        key={line.id} 
+                        className="bg-brand-dark/5 text-brand-dark px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border border-brand-dark/5 group-hover:border-primary/20 group-hover:bg-primary/5 transition-all"
+                        style={{ color: line.color, borderColor: `${line.color}20`, backgroundColor: `${line.color}10` }}
+                      >
+                        {line.name}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 text-[10px] md:text-xs italic font-medium">Linha não encontrada</span>
+                    );
+                  })()
+                ) : (
                   <span className="text-slate-400 text-[10px] md:text-xs italic font-medium">Nenhuma linha definida</span>
                 )}
               </div>
@@ -265,16 +292,22 @@ export function Professionals({ careLines }: ProfessionalsProps) {
                 <button 
                   type="button"
                   onClick={handleCloseForm}
-                  className="flex-1 py-4 px-6 rounded-xl font-bold text-white/60 bg-white/10 hover:bg-white/20 transition-all active:scale-95"
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 px-6 rounded-xl font-bold text-white/60 bg-white/10 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-4 px-6 rounded-xl font-bold text-brand-dark bg-white hover:bg-white/90 shadow-lg shadow-black/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 px-6 rounded-xl font-bold text-brand-dark bg-white hover:bg-white/90 shadow-lg shadow-black/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Save size={20} />
-                  {editingId ? 'Salvar Alterações' : 'Cadastrar'}
+                  {isSubmitting ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <Save size={20} />
+                  )}
+                  {isSubmitting ? 'Salvando...' : (editingId ? 'Salvar Alterações' : 'Cadastrar')}
                 </button>
               </div>
             </form>
