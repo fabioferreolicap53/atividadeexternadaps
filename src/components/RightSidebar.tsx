@@ -24,28 +24,44 @@ interface RightSidebarProps {
   absentProfessionals?: ProfessionalStatus[];
   onActivityClick?: (activity: Activity) => void;
   onProfessionalClick?: (professional: ProfessionalStatus) => void;
+  className?: string;
+  selectedDate?: string;
 }
 
-export function RightSidebar({ absentProfessionals = [], onActivityClick, onProfessionalClick }: RightSidebarProps) {
+export function RightSidebar({ 
+  absentProfessionals = [], 
+  onActivityClick, 
+  onProfessionalClick, 
+  className,
+  selectedDate 
+}: RightSidebarProps) {
+  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+
   return (
-    <div className="h-full flex flex-col">
+    <div className={`h-full flex flex-col ${className || ''}`}>
       {/* Absent Professionals Card */}
       <div className="bg-brand-dark p-5 md:p-7 rounded-[32px] shadow-2xl shadow-black/20 border border-white/5 space-y-5 h-full flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm md:text-base font-black font-headline text-white uppercase tracking-tight">AUSÊNCIAS AGORA</h3>
+            <h3 className="text-sm md:text-base font-black font-headline text-white uppercase tracking-tight">
+              {isToday ? 'AUSÊNCIAS AGORA' : 'AUSÊNCIAS NO DIA'}
+            </h3>
           </div>
           <div className="relative flex items-center justify-center">
             <span className="relative text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-error rounded-full animate-ping shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-              Atenção
+              <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-error animate-ping shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-primary-light shadow-[0_0_8px_rgba(0,72,141,0.5)]'}`} />
+              {isToday ? 'Atenção' : 'Planejado'}
             </span>
           </div>
         </div>
         
         <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {absentProfessionals.map((prof) => (
-            <div key={prof.id} className="bg-white/[0.05] p-4 rounded-2xl border border-white/10 group hover:border-error/40 transition-all duration-300">
+            <div key={prof.id} className={`p-4 rounded-2xl border transition-all duration-300 ${
+              isToday 
+                ? 'bg-white/[0.05] border-white/10 group hover:border-error/40' 
+                : 'bg-white/[0.03] border-white/5 group hover:border-primary/40'
+            }`}>
               <div 
                 className="flex items-start gap-3 cursor-pointer group/card"
                 onClick={() => onProfessionalClick?.(prof)}
@@ -112,7 +128,11 @@ export function RightSidebar({ absentProfessionals = [], onActivityClick, onProf
 
           {absentProfessionals.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-white/40 text-sm font-medium italic">Nenhum profissional ausente no momento.</p>
+              <p className="text-white/40 text-sm font-medium italic">
+                {isToday 
+                  ? 'Nenhum profissional ausente no momento.' 
+                  : 'Nenhuma ausência planejada para este dia.'}
+              </p>
             </div>
           )}
         </div>
