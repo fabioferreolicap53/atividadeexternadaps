@@ -100,7 +100,7 @@ export function PremiumSelect({
       </button>
 
       {isOpen && (
-        <div className={`absolute z-[100] min-w-full md:w-full mt-2 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${align === 'right' ? 'right-0' : 'left-0'}`}>
+        <div className={`absolute z-[100] left-0 right-0 mt-2 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
           {showSearch && (
             <div className="p-3 border-b border-slate-50">
               <div className="relative">
@@ -117,12 +117,12 @@ export function PremiumSelect({
             </div>
           )}
 
-          <div className="py-1 max-h-72 overflow-y-auto custom-scrollbar">
+          <div className="py-1 max-h-[60vh] md:max-h-72 overflow-y-auto custom-scrollbar">
             {onCustomValue && (
-              <div className="px-2 py-1">
+              <div className="px-3 py-2">
                 {isCustomMode ? (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border-2 border-brand-dark/20">
-                    <Pencil size={14} className="text-brand-dark" />
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 rounded-xl border-2 border-brand-dark/20 ring-4 ring-brand-dark/5">
+                    <Pencil size={14} className="text-brand-dark shrink-0" />
                     <input
                       ref={customInputRef}
                       type="text"
@@ -140,7 +140,7 @@ export function PremiumSelect({
                           }
                         }
                       }}
-                      className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-slate-900"
+                      className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-slate-900 min-w-0"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button
@@ -154,7 +154,7 @@ export function PremiumSelect({
                           setCustomInputValue('');
                         }
                       }}
-                      className="bg-brand-dark text-white p-1.5 rounded-lg hover:bg-brand-dark/90 transition-colors"
+                      className="bg-brand-dark text-white p-1.5 rounded-lg hover:bg-brand-dark/90 transition-colors shrink-0"
                     >
                       <Check size={14} strokeWidth={3} />
                     </button>
