@@ -41,6 +41,7 @@ interface ActivitiesProps {
   activities: Activity[];
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
   professionals: Professional[];
+  key?: string;
 }
 
 export function Activities({ 
@@ -131,6 +132,13 @@ export function Activities({
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterProfessionalId('all');
+    setFilterStartDate('');
+    setFilterEndDate('');
+  };
+
   const filteredActivities = useMemo(() => {
     return activities.filter(a => {
       // Search term
@@ -153,12 +161,38 @@ export function Activities({
     });
   }, [activities, searchTerm, filterProfessionalId, filterStartDate, filterEndDate]);
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFilterProfessionalId('all');
-    setFilterStartDate('');
-    setFilterEndDate('');
-  };
+  const locationOptions = [
+    { id: 'CF ALICE DE JESUS REGO', name: 'CF ALICE DE JESUS REGO' },
+    { id: 'CF DEOLINDO COUTO', name: 'CF DEOLINDO COUTO' },
+    { id: 'CF EDSON ABDALLA SAAD', name: 'CF EDSON ABDALLA SAAD' },
+    { id: 'CF ERNANI DE PAIVA FERREIRA BRAGA', name: 'CF ERNANI DE PAIVA FERREIRA BRAGA' },
+    { id: 'CF HELANDE DE MELLO GONÇALVES', name: 'CF HELANDE DE MELLO GONÇALVES' },
+    { id: 'CF ILZO MOTTA DE MELLO', name: 'CF ILZO MOTTA DE MELLO' },
+    { id: 'CF JAMIL HADDAD', name: 'CF JAMIL HADDAD' },
+    { id: 'CF JOÃO BATISTA CHAGAS', name: 'CF JOÃO BATISTA CHAGAS' },
+    { id: 'CF JOSÉ ANTÔNIO CIRAUDO', name: 'CF JOSÉ ANTÔNIO CIRAUDO' },
+    { id: 'CF LENICE MARIA MONTEIRO COELHO', name: 'CF LENICE MARIA MONTEIRO COELHO' },
+    { id: 'CF LOURENÇO DE MELLO', name: 'CF LOURENÇO DE MELLO' },
+    { id: 'CF SAMUEL PENHA VALLE', name: 'CF SAMUEL PENHA VALLE' },
+    { id: 'CF SÉRGIO AROUCA', name: 'CF SÉRGIO AROUCA' },
+    { id: 'CF VALÉRIA GOMES ESTEVES', name: 'CF VALÉRIA GOMES ESTEVES' },
+    { id: 'CF WALDEMAR BERARDINELLI', name: 'CF WALDEMAR BERARDINELLI' },
+    { id: 'CMS ADELINO SIMÕES', name: 'CMS ADELINO SIMÕES' },
+    { id: 'CMS ALOYSIO AMÂNCIO DA SILVA', name: 'CMS ALOYSIO AMÂNCIO DA SILVA' },
+    { id: 'CMS CATTAPRETA', name: 'CMS CATTAPRETA' },
+    { id: 'CMS CESÁRIO DE MELO', name: 'CMS CESÁRIO DE MELO' },
+    { id: 'CMS CYRO DE MELLO', name: 'CMS CYRO DE MELLO' },
+    { id: 'CMS DÉCIO AMARAL FILHO', name: 'CMS DÉCIO AMARAL FILHO' },
+    { id: 'CMS EMYDIO CABRAL', name: 'CMS EMYDIO CABRAL' },
+    { id: 'CMS FLORIPES GALDINO PEREIRA', name: 'CMS FLORIPES GALDINO PEREIRA' },
+    { id: 'CMS MARIA APARECIDA DE ALMEIDA', name: 'CMS MARIA APARECIDA DE ALMEIDA' },
+    { id: 'CMS SÁVIO ANTUNES', name: 'CMS SÁVIO ANTUNES' },
+    { id: 'SMS POLICLÍNICA LINCOLN DE FREITAS FILHO', name: 'SMS POLICLÍNICA LINCOLN DE FREITAS FILHO' },
+    { id: 'CAPS SIMÃO BACAMARTE', name: 'CAPS SIMÃO BACAMARTE' },
+    { id: 'CAPSAD II JÚLIO CÉSAR DE CARVALHO', name: 'CAPSAD II JÚLIO CÉSAR DE CARVALHO' },
+    { id: 'CAPSI SANTA CRUZ', name: 'CAPSI SANTA CRUZ' },
+    { id: 'HOSPITAL MUNICIPAL PEDRO SEGUNDO', name: 'HOSPITAL MUNICIPAL PEDRO SEGUNDO' },
+  ];
 
   return (
     <div className="p-4 md:p-8 space-y-6 md:space-y-8 animate-in fade-in duration-500">
@@ -427,13 +461,11 @@ export function Activities({
                     label="Local da Atividade Externa"
                     value={location}
                     onChange={setLocation}
-                    options={[
-                      { id: 'Sala 402', name: 'Sala 402' },
-                      { id: 'Zona Sul', name: 'Zona Sul' },
-                      { id: 'Auditório Central', name: 'Auditório Central' },
-                      { id: 'Setor Administrativo', name: 'Setor Administrativo' },
-                    ]}
+                    options={locationOptions}
                     icon={MapPin}
+                    showSearch={true}
+                    onCustomValue={setLocation}
+                    customPlaceholder="Digitar local personalizado..."
                   />
                 </div>
 

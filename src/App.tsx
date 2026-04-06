@@ -67,9 +67,9 @@ export default function App() {
         
         // Busca paralela das coleções usando os nomes da imagem
         const [careLinesData, professionalsData, activitiesData] = await Promise.all([
-          pb.collection('atividadeexternadaps53_linhasdecuidado').getFullList(),
-          pb.collection('atividadeexternadaps53_profissionais').getFullList(),
-          pb.collection('atividadeexternadaps53_atividades').getFullList()
+          pb.collection('atividadeexternadaps53_linhasdecuidado').getFullList({ requestKey: null }),
+          pb.collection('atividadeexternadaps53_profissionais').getFullList({ requestKey: null }),
+          pb.collection('atividadeexternadaps53_atividades').getFullList({ requestKey: null })
         ]);
 
         // Mapear Linhas de Cuidado

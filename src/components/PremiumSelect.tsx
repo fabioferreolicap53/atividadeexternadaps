@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, X, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check, X, Calendar, ChevronLeft, ChevronRight, Search, Pencil } from 'lucide-react';
 
 interface Option {
   id: string;
@@ -21,6 +21,9 @@ interface PremiumSelectProps {
   icon: any;
   placeholder?: string;
   align?: 'left' | 'right';
+  showSearch?: boolean;
+  onCustomValue?: (val: string) => void;
+  customPlaceholder?: string;
 }
 
 export function PremiumSelect({ 
@@ -30,22 +33,45 @@ export function PremiumSelect({
   options, 
   icon: Icon,
   placeholder = "Selecione...",
-  align = 'left'
+  align = 'left',
+  showSearch = false,
+  onCustomValue,
+  customPlaceholder = "Digitar local personalizado..."
 }: PremiumSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  const [customInputValue, setCustomInputValue] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const customInputRef = useRef<HTMLInputElement>(null);
 
   const selectedOption = options.find(opt => opt.id === value);
+  
+  // Se o valor não estiver nas opções e não estivermos em modo custom, 
+  // pode ser um valor customizado vindo do banco
+  const isValueCustom = value && !selectedOption;
+
+  const filteredOptions = options.filter(opt => 
+    opt.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchTerm('');
+        setIsCustomMode(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isCustomMode && customInputRef.current) {
+      customInputRef.current.focus();
+    }
+  }, [isCustomMode]);
 
   return (
     <div className={`relative ${label ? 'space-y-2' : ''} ${isOpen ? 'z-[110]' : 'z-10'}`} ref={containerRef}>
@@ -66,8 +92,8 @@ export function PremiumSelect({
           <Icon size={20} strokeWidth={2.5} />
         </div>
         
-        <span className={`flex-1 font-bold text-sm truncate ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}>
-          {selectedOption ? selectedOption.name : placeholder}
+        <span className={`flex-1 font-bold text-sm truncate ${value ? 'text-slate-900' : 'text-slate-400'}`}>
+          {selectedOption ? selectedOption.name : (value || placeholder)}
         </span>
 
         <ChevronDown size={20} className={`text-slate-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -75,23 +101,107 @@ export function PremiumSelect({
 
       {isOpen && (
         <div className={`absolute z-[100] min-w-full md:w-full mt-2 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${align === 'right' ? 'right-0' : 'left-0'}`}>
-          <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
-            {options.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  onChange(opt.id);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 ${
-                  value === opt.id ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
-                }`}
-              >
-                <span className="truncate pr-4">{opt.name}</span>
-                {value === opt.id && <Check size={18} strokeWidth={3} className="text-brand-dark shrink-0" />}
-              </button>
-            ))}
+          {showSearch && (
+            <div className="p-3 border-b border-slate-50">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar local..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="py-1 max-h-72 overflow-y-auto custom-scrollbar">
+            {onCustomValue && (
+              <div className="px-2 py-1">
+                {isCustomMode ? (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border-2 border-brand-dark/20">
+                    <Pencil size={14} className="text-brand-dark" />
+                    <input
+                      ref={customInputRef}
+                      type="text"
+                      placeholder="Digite o local..."
+                      value={customInputValue}
+                      onChange={(e) => setCustomInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (customInputValue.trim()) {
+                            onChange(customInputValue.trim());
+                            setIsOpen(false);
+                            setIsCustomMode(false);
+                            setCustomInputValue('');
+                          }
+                        }
+                      }}
+                      className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-slate-900"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (customInputValue.trim()) {
+                          onChange(customInputValue.trim());
+                          setIsOpen(false);
+                          setIsCustomMode(false);
+                          setCustomInputValue('');
+                        }
+                      }}
+                      className="bg-brand-dark text-white p-1.5 rounded-lg hover:bg-brand-dark/90 transition-colors"
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsCustomMode(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-black text-brand-dark hover:bg-brand-dark/5 rounded-xl transition-all group"
+                  >
+                    <div className="p-1.5 bg-brand-dark/10 rounded-lg group-hover:bg-brand-dark group-hover:text-white transition-all">
+                      <Pencil size={14} strokeWidth={3} />
+                    </div>
+                    <span>{customPlaceholder}</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="h-[1px] bg-slate-50 mx-4 my-1" />
+
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.id);
+                    setIsOpen(false);
+                    setSearchTerm('');
+                  }}
+                  className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-bold transition-all hover:bg-slate-50 ${
+                    value === opt.id ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
+                  }`}
+                >
+                  <span className="truncate pr-4">{opt.name}</span>
+                  {value === opt.id && <Check size={18} strokeWidth={3} className="text-brand-dark shrink-0" />}
+                </button>
+              ))
+            ) : (
+              <div className="px-6 py-8 text-center">
+                <p className="text-xs font-bold text-slate-400">Nenhum local encontrado</p>
+              </div>
+            )}
           </div>
         </div>
       )}
