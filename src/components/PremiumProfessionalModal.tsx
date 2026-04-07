@@ -27,7 +27,7 @@ interface ProfessionalStatus {
   id: string;
   name: string;
   role: string;
-  careLine?: string;
+  careLines: string[];
   status: 'present' | 'absent' | 'on-duty';
   reason?: string;
   currentActivity?: Activity;
@@ -38,12 +38,14 @@ interface PremiumProfessionalModalProps {
   isOpen: boolean;
   onClose: () => void;
   professional: ProfessionalStatus | null;
+  careLines: any[];
 }
 
 export function PremiumProfessionalModal({ 
   isOpen, 
   onClose, 
-  professional 
+  professional,
+  careLines
 }: PremiumProfessionalModalProps) {
   if (!isOpen || !professional) return null;
 
@@ -133,9 +135,22 @@ export function PremiumProfessionalModal({
               <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary shrink-0 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
                 <Info size={20} strokeWidth={2.5} />
               </div>
-              <div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Linha de Cuidado</p>
-                <p className="text-sm font-black text-slate-900 leading-tight">{professional.careLine || 'Geral'}</p>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Linhas de Cuidado</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {professional.careLines && professional.careLines.length > 0 ? (
+                    professional.careLines.map(lineId => {
+                      const line = careLines.find(l => l.id === lineId);
+                      return line ? (
+                        <span key={line.id} className="text-[10px] font-black text-primary uppercase tracking-tight bg-primary/5 px-2 py-0.5 rounded-lg border border-primary/10">
+                          {line.name}
+                        </span>
+                      ) : null;
+                    })
+                  ) : (
+                    <p className="text-sm font-black text-slate-900 leading-tight">Geral</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -34,7 +34,7 @@ interface Professional {
   id: string;
   name: string;
   role: string;
-  careLine?: string;
+  careLines: string[];
 }
 
 interface ProfessionalStatus extends Professional {
@@ -47,9 +47,10 @@ interface ProfessionalStatus extends Professional {
 interface DashboardProps {
   activities: Activity[];
   professionals: Professional[];
+  careLines: any[]; // Use any[] for now to avoid circular deps or re-declaring CareLine
 }
 
-export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSIONALS_MOCK }: DashboardProps) {
+export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSIONALS_MOCK, careLines }: DashboardProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<ProfessionalStatus | null>(null);
@@ -231,6 +232,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
         isOpen={isProfModalOpen}
         onClose={() => setIsProfModalOpen(false)}
         professional={selectedProfessional}
+        careLines={careLines}
       />
     </div>
   );

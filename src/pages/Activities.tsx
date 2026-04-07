@@ -31,7 +31,7 @@ interface Activity {
 interface Professional {
   id: string;
   name: string;
-  careLine: string;
+  careLines: string[];
 }
 
 interface ActivitiesProps {
@@ -39,6 +39,7 @@ interface ActivitiesProps {
   activities: Activity[];
   setActivities: React.Dispatch<React.SetStateAction<Activity[]>>;
   professionals: Professional[];
+  careLines: any[];
   key?: string;
 }
 
@@ -46,7 +47,8 @@ export function Activities({
   initialFormOpen = false,
   activities,
   setActivities,
-  professionals: PROFESSIONALS_MOCK
+  professionals: PROFESSIONALS_MOCK,
+  careLines
 }: ActivitiesProps) {
   const [isFormOpen, setIsFormOpen] = useState(initialFormOpen);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -391,8 +393,17 @@ export function Activities({
                         </span>
                       ))}
                     </div>
-                    {professionals.length === 1 && professionals[0].careLine && (
-                      <p className="text-[8px] font-bold text-primary/60 italic uppercase tracking-tighter leading-none truncate mt-1">{professionals[0].careLine}</p>
+                    {professionals.length === 1 && professionals[0].careLines && professionals[0].careLines.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {professionals[0].careLines.map(lineId => {
+                          const line = careLines.find(l => l.id === lineId);
+                          return line ? (
+                            <span key={lineId} className="text-[8px] font-bold text-primary/60 italic uppercase tracking-tighter leading-none truncate">
+                              {line.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
                     )}
                   </div>
                 </div>

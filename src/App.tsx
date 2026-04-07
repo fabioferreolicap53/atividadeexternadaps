@@ -29,7 +29,7 @@ export interface Professional {
   id: string;
   name: string;
   role: string;
-  careLine?: string;
+  careLines: string[];
 }
 
 export default function App() {
@@ -85,7 +85,7 @@ export default function App() {
           id: item.id,
           name: item.name,
           role: item.role,
-          careLine: item.field && item.field.length > 0 ? item.field[0] : undefined
+          careLines: item.field || [] // O PocketBase retorna o campo 'field' (Relation) como array
         })));
 
         // Mapear Atividades
@@ -155,6 +155,7 @@ export default function App() {
           <Dashboard 
             activities={activities} 
             professionals={professionals} 
+            careLines={careLines}
           />
         ) : currentPage === 'professionals' ? (
           <div className="flex-1 overflow-x-hidden">
@@ -176,6 +177,7 @@ export default function App() {
               activities={activities}
               setActivities={setActivities}
               professionals={professionals}
+              careLines={careLines}
             />
           </div>
         )}

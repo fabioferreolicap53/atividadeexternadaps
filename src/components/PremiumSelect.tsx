@@ -537,12 +537,14 @@ export function PremiumMultiSelect({
   align = 'left'
 }: PremiumMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchTerm('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -560,6 +562,10 @@ export function PremiumMultiSelect({
     e.stopPropagation();
     onChange(selectedValues.filter(v => v !== id));
   };
+
+  const filteredOptions = options.filter(opt => 
+    opt.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className={`relative ${label ? 'space-y-2' : ''} ${isOpen ? 'z-[110]' : 'z-10'}`} ref={containerRef}>
@@ -602,27 +608,46 @@ export function PremiumMultiSelect({
 
       {isOpen && (
         <div className={`absolute z-[100] min-w-full md:w-full mt-2 bg-white rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ${align === 'right' ? 'right-0' : 'left-0'}`}>
+          <div className="p-3 border-b border-slate-50">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
           <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
-            {options.map((opt) => {
-              const isSelected = selectedValues.includes(opt.id);
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => toggleOption(opt.id)}
-                  className={`w-full flex items-center justify-between px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 ${
-                    isSelected ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
-                  }`}
-                >
-                  <span className="truncate pr-4">{opt.name}</span>
-                  <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${
-                    isSelected ? 'bg-brand-dark border-brand-dark' : 'border-slate-200'
-                  }`}>
-                    {isSelected && <Check size={14} strokeWidth={4} className="text-white" />}
-                  </div>
-                </button>
-              );
-            })}
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => {
+                const isSelected = selectedValues.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => toggleOption(opt.id)}
+                    className={`w-full flex items-center justify-between px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 ${
+                      isSelected ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
+                    }`}
+                  >
+                    <span className="truncate pr-4">{opt.name}</span>
+                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${
+                      isSelected ? 'bg-brand-dark border-brand-dark' : 'border-slate-200'
+                    }`}>
+                      {isSelected && <Check size={14} strokeWidth={4} className="text-white" />}
+                    </div>
+                  </button>
+                );
+              })
+            ) : (
+              <div className="px-6 py-8 text-center">
+                <p className="text-xs font-bold text-slate-400">Nenhuma opção encontrada</p>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -49,8 +49,7 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
     if (professional) {
       setEditingId(professional.id);
       setName(professional.name);
-      // Se for uma string (id), colocamos num array
-      setSelectedCareLines(professional.careLine ? [professional.careLine] : []);
+      setSelectedCareLines(professional.careLines || []);
     } else {
       setEditingId(null);
       setName('');
@@ -81,7 +80,7 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
       if (editingId) {
         const updatedRecord = await pb.collection('atividadeexternadaps53_profissionais').update(editingId, data);
         setProfessionals(prev => prev.map(p => 
-          p.id === editingId ? { ...p, name: updatedRecord.name, careLine: updatedRecord.field ? updatedRecord.field[0] : undefined } : p
+          p.id === editingId ? { ...p, name: updatedRecord.name, careLines: updatedRecord.field || [] } : p
         ));
       } else {
         const newRecord = await pb.collection('atividadeexternadaps53_profissionais').create(data);
@@ -89,7 +88,7 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
           id: newRecord.id,
           name: newRecord.name,
           role: newRecord.role,
-          careLine: newRecord.field ? newRecord.field[0] : undefined
+          careLines: newRecord.field || []
         };
         setProfessionals(prev => [...prev, newProf]);
       }
@@ -194,9 +193,9 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
               <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Linhas de Atuação</p>
               
               <div className="flex flex-wrap gap-2">
-                {prof.careLine ? (
-                  (() => {
-                    const line = careLines.find(l => l.id === prof.careLine);
+                {prof.careLines && prof.careLines.length > 0 ? (
+                  prof.careLines.map(lineId => {
+                    const line = careLines.find(l => l.id === lineId);
                     return line ? (
                       <span 
                         key={line.id} 
@@ -205,10 +204,8 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
                       >
                         {line.name}
                       </span>
-                    ) : (
-                      <span className="text-slate-400 text-[10px] md:text-xs italic font-medium">Linha não encontrada</span>
-                    );
-                  })()
+                    ) : null;
+                  })
                 ) : (
                   <span className="text-slate-400 text-[10px] md:text-xs italic font-medium">Nenhuma linha definida</span>
                 )}
