@@ -129,7 +129,7 @@ export function PremiumDetailModal({
                 <Sparkles size={40} />
               </div>
               <p className="text-slate-600 font-medium leading-relaxed relative z-10">
-                {activity.description}. Atividade planejada para execução externa com foco no cumprimento dos protocolos institucionais e excelência no atendimento.
+                {activity.description}
               </p>
             </div>
           </div>

@@ -13,7 +13,7 @@ import {
   FileText,
   CalendarDays
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Timeline } from '../components/Timeline';
 import { RightSidebar } from '../components/RightSidebar';
 import { PremiumDetailModal } from '../components/PremiumDetailModal';
@@ -98,6 +98,17 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
     .filter(a => a.date === selectedDate)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
+  // Extrair todas as datas que possuem atividades para indicadores no calendário
+  const activityDates = useMemo(() => {
+    const dates = new Set<string>();
+    ACTIVITIES_MOCK.forEach(act => {
+      // Garantir formato YYYY-MM-DD
+      const datePart = act.date.split(' ')[0];
+      dates.add(datePart);
+    });
+    return Array.from(dates);
+  }, [ACTIVITIES_MOCK]);
+
   // Formatação da data por extenso em Português
   const dateObj = new Date(selectedDate + 'T12:00:00');
   const weekday = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
@@ -150,12 +161,13 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
             <div className="text-on-surface-variant font-medium text-sm sm:text-base md:text-lg leading-relaxed flex flex-wrap items-center gap-x-1.5">
               <span>{weekday},</span>
               <PremiumDatePicker 
-                value={selectedDate}
-                onChange={setSelectedDate}
-                variant="inline"
-                customDisplay={dayAndMonth}
-                align="left"
-              />
+              value={selectedDate}
+              onChange={setSelectedDate}
+              variant="inline"
+              customDisplay={dayAndMonth}
+              align="left"
+              eventDates={activityDates}
+            />
               <span>•</span>
               <span className="text-primary font-bold">{dailyActivities.length} atividades</span> 
               <span>planejadas</span>
@@ -167,6 +179,8 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
             activities={dailyActivities}
             professionals={PROFESSIONALS_MOCK}
             careLines={careLines}
+            isToday={isToday}
+            selectedDate={selectedDate}
           />
         </div>
 

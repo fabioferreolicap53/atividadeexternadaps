@@ -324,6 +324,7 @@ interface PremiumDatePickerProps {
   align?: 'left' | 'right';
   variant?: 'default' | 'inline';
   customDisplay?: React.ReactNode;
+  eventDates?: string[];
 }
 
 export function PremiumDatePicker({ 
@@ -334,7 +335,8 @@ export function PremiumDatePicker({
   icon: Icon = Calendar,
   align = 'left',
   variant = 'default',
-  customDisplay
+  customDisplay,
+  eventDates = []
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -418,6 +420,11 @@ export function PremiumDatePicker({
     return today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
   };
 
+  const hasEvent = (day: number) => {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return eventDates.includes(dateStr);
+  };
+
   return (
     <div className={`relative ${label && variant !== 'inline' ? 'space-y-2' : ''} ${isOpen ? 'z-[110]' : 'z-10'} ${variant === 'inline' ? 'inline-block' : ''}`} ref={containerRef}>
       {label && variant !== 'inline' && (
@@ -488,7 +495,7 @@ export function PremiumDatePicker({
                 {day !== null ? (
                   <button
                     onClick={() => handleSelectDay(day)}
-                    className={`w-full h-full rounded-xl text-xs font-bold transition-all ${
+                    className={`w-full h-full rounded-xl text-xs font-bold transition-all relative flex items-center justify-center ${
                       isSelected(day)
                         ? 'bg-brand-dark text-white shadow-lg shadow-brand-dark/20 scale-110'
                         : isToday(day)
@@ -497,6 +504,9 @@ export function PremiumDatePicker({
                     }`}
                   >
                     {day}
+                    {hasEvent(day) && !isSelected(day) && (
+                      <div className="absolute bottom-1.5 w-1 h-1 bg-primary rounded-full" />
+                    )}
                   </button>
                 ) : null}
               </div>

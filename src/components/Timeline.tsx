@@ -1,4 +1,4 @@
-import { Clock, AlertTriangle, Users, MapPin } from 'lucide-react';
+import { Clock, AlertTriangle, Users, MapPin, Info } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -22,15 +22,20 @@ interface TimelineProps {
   activities: Activity[];
   professionals: Professional[];
   careLines: any[];
+  isToday: boolean;
+  selectedDate: string;
 }
 
-export function Timeline({ onActivityClick, activities, professionals, careLines }: TimelineProps) {
+export function Timeline({ onActivityClick, activities, professionals, careLines, isToday, selectedDate }: TimelineProps) {
   // Ordenar atividades por horário de início
   const sortedActivities = [...activities].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   // Lógica para determinar status da atividade (simplificada)
   const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  const isPastDay = selectedDate < todayStr;
 
   return (
     <div className="bg-brand-dark p-4 sm:p-5 md:p-7 rounded-[28px] sm:rounded-[32px] shadow-2xl shadow-black/20 border border-white/5 relative overflow-hidden h-full flex flex-col">
@@ -49,8 +54,8 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
       <div className="timeline-ruler relative space-y-8 sm:space-y-12 pl-12 sm:pl-14 md:pl-24 pr-1 sm:pr-2 md:pr-10 pb-4 before:content-[''] before:absolute before:left-5 sm:left-6 md:left-10 before:top-0 before:bottom-0 before:w-[2px] before:bg-white/20 before:shadow-[0_0_10px_rgba(255,255,255,0.1)] after:content-[''] after:absolute after:left-5 sm:after:left-6 md:after:left-10 after:top-0 after:bottom-0 after:w-[10px] after:-ml-[4px] after:bg-primary/10 after:blur-xl">
         
         {sortedActivities.map((activity, index) => {
-          const isActive = currentTime >= activity.startTime && currentTime <= activity.endTime;
-          const isPast = currentTime > activity.endTime;
+          const isActive = isToday && currentTime >= activity.startTime && currentTime <= activity.endTime;
+          const isPast = isPastDay || (isToday && currentTime > activity.endTime);
           
           return (
             <div key={activity.id} className={`relative group ${isPast ? 'opacity-40 grayscale-[0.8]' : ''}`}>
@@ -153,8 +158,8 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                     </div>
                   ) : !isPast ? (
                     <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-white/5 hover:bg-primary hover:text-white text-white/70 rounded-xl sm:rounded-2xl border border-white/10 transition-all duration-300 shadow-md group/btn cursor-pointer">
-                      <Users size={14} className="text-white/30 group-hover/btn:text-white transition-colors" />
-                      <span className="text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">Ver Equipe</span>
+                      <Info size={14} className="text-white/30 group-hover/btn:text-white transition-colors" />
+                      <span className="text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">VER DETALHES</span>
                     </div>
                   ) : (
                     <span className="text-[8px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Concluído</span>
