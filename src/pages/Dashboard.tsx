@@ -166,6 +166,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
             onActivityClick={handleOpenDetail} 
             activities={dailyActivities}
             professionals={PROFESSIONALS_MOCK}
+            careLines={careLines}
           />
         </div>
 

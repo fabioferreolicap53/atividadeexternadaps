@@ -14,15 +14,17 @@ interface Professional {
   id: string;
   name: string;
   role: string;
+  careLines: string[];
 }
 
 interface TimelineProps {
   onActivityClick?: (activity: Activity) => void;
   activities: Activity[];
   professionals: Professional[];
+  careLines: any[];
 }
 
-export function Timeline({ onActivityClick, activities, professionals }: TimelineProps) {
+export function Timeline({ onActivityClick, activities, professionals, careLines }: TimelineProps) {
   // Ordenar atividades por horário de início
   const sortedActivities = [...activities].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
@@ -107,16 +109,31 @@ export function Timeline({ onActivityClick, activities, professionals }: Timelin
                       <MapPin size={14} className={isActive ? 'text-primary-light' : 'text-white/30'} /> 
                       <span className="truncate max-w-[100px] sm:max-w-none">{activity.location}</span>
                     </span>
-                    <span className={`flex items-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all duration-500 ${isActive ? 'bg-primary/10 border-primary/20 text-primary-light' : 'bg-white/5 border-white/5'}`}>
-                      <Users size={14} className={isActive ? 'text-primary-light' : 'text-white/30'} /> 
-                      <div className="flex flex-wrap gap-1">
+                    <span className={`flex items-start gap-2.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all duration-500 ${isActive ? 'bg-primary/10 border-primary/20 text-primary-light' : 'bg-white/5 border-white/5'}`}>
+                      <Users size={14} className={`mt-1 ${isActive ? 'text-primary-light' : 'text-white/30'}`} /> 
+                      <div className="flex flex-col gap-1.5">
                         {activity.professionalIds.map((id, i) => {
                           const prof = professionals.find(p => p.id === id);
+                          if (!prof) return null;
+                          
                           return (
-                            <span key={id} className="whitespace-nowrap">
-                              {prof?.name?.split(' ')[0] || 'Prof.'}
-                              {i < activity.professionalIds.length - 1 && ","}
-                            </span>
+                            <div key={id} className="flex flex-col">
+                              <span className={`text-[10px] sm:text-xs font-black uppercase tracking-tight ${isActive ? 'text-white' : 'text-white/80'}`}>
+                                {prof.name}
+                              </span>
+                              {prof.careLines && prof.careLines.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-0.5">
+                                  {prof.careLines.map(lineId => {
+                                    const line = careLines.find(l => l.id === lineId);
+                                    return line ? (
+                                      <span key={lineId} className="text-[7px] sm:text-[8px] font-bold opacity-60 italic uppercase tracking-tighter leading-none">
+                                        {line.name}
+                                      </span>
+                                    ) : null;
+                                  })}
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
