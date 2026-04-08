@@ -91,8 +91,8 @@ export function Login({ onLogin }: LoginProps) {
             </div>
 
             {error && (
-              <div className="bg-error/10 border border-error/20 p-4 rounded-2xl animate-in shake duration-300">
-                <p className="text-error text-[11px] font-bold text-center uppercase tracking-wider">{error}</p>
+              <div className="bg-error/20 border border-error/40 p-4 rounded-2xl animate-in shake duration-300 shadow-[0_0_20px_rgba(186,26,26,0.15)]">
+                <p className="text-error-container text-[11px] font-black text-center uppercase tracking-wider">{error}</p>
               </div>
             )}
 

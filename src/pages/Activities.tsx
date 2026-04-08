@@ -12,7 +12,8 @@ import {
   Search,
   Users,
   ArrowRight,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { PremiumSelect, PremiumDatePicker, PremiumTimePicker, PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
@@ -77,6 +78,7 @@ export function Activities({
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [professionalIds, setProfessionalIds] = useState<string[]>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Função para adicionar 2 horas a um horário HH:mm
   const addTwoHours = (timeStr: string) => {
@@ -125,6 +127,7 @@ export function Activities({
     setLocation('');
     setDescription('');
     setProfessionalIds([]);
+    setValidationError(null);
     setIsFormOpen(true);
   };
 
@@ -156,7 +159,21 @@ export function Activities({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !startTime || !endTime || !location || !description || professionalIds.length === 0) return;
+    setValidationError(null);
+
+    // Validação de campos obrigatórios
+    const missingFields = [];
+    if (professionalIds.length === 0) missingFields.push('Profissionais');
+    if (!date) missingFields.push('Data');
+    if (!startTime) missingFields.push('Horário de Início');
+    if (!endTime) missingFields.push('Horário de Término');
+    if (!location) missingFields.push('Local');
+    if (!description.trim()) missingFields.push('Descrição');
+
+    if (missingFields.length > 0) {
+      setValidationError(`Por favor, preencha os campos obrigatórios: ${missingFields.join(', ')}.`);
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -595,6 +612,15 @@ export function Activities({
                   </div>
                 </div>
               </div>
+
+              {validationError && (
+                <div className="bg-error/20 border border-error/40 p-4 rounded-2xl flex items-start gap-3 animate-in slide-in-from-top-2 duration-300 shadow-[0_0_20px_rgba(186,26,26,0.15)]">
+                  <AlertCircle size={18} className="text-error-container shrink-0 mt-0.5" />
+                  <p className="text-xs font-black text-error-container uppercase tracking-tight leading-relaxed">
+                    {validationError}
+                  </p>
+                </div>
+              )}
 
               <div className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4 shrink-0">
                 <button 
