@@ -117,11 +117,11 @@ export function PremiumSelect({
             </div>
           )}
 
-          <div className="py-1 max-h-[60vh] md:max-h-72 overflow-y-auto custom-scrollbar">
+          <div className="py-1 max-h-[40vh] md:max-h-72 overflow-y-auto custom-scrollbar">
             {onCustomValue && (
-              <div className="px-3 py-2">
+              <div className="px-3 py-1.5 md:py-2">
                 {isCustomMode ? (
-                  <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 rounded-xl border-2 border-brand-dark/20 ring-4 ring-brand-dark/5">
+                  <div className="flex items-center gap-2 px-3 py-2 md:py-2.5 bg-slate-50 rounded-xl border-2 border-brand-dark/20 ring-4 ring-brand-dark/5">
                     <Pencil size={14} className="text-brand-dark shrink-0" />
                     <input
                       ref={customInputRef}
@@ -134,13 +134,12 @@ export function PremiumSelect({
                           e.preventDefault();
                           if (customInputValue.trim()) {
                             onChange(customInputValue.trim());
-                            setIsOpen(false);
                             setIsCustomMode(false);
                             setCustomInputValue('');
                           }
                         }
                       }}
-                      className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-slate-900 min-w-0"
+                      className="flex-1 bg-transparent border-none outline-none text-xs md:text-sm font-bold text-slate-900 min-w-0"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button
@@ -149,12 +148,11 @@ export function PremiumSelect({
                         e.stopPropagation();
                         if (customInputValue.trim()) {
                           onChange(customInputValue.trim());
-                          setIsOpen(false);
                           setIsCustomMode(false);
                           setCustomInputValue('');
                         }
                       }}
-                      className="bg-brand-dark text-white p-1.5 rounded-lg hover:bg-brand-dark/90 transition-colors shrink-0"
+                      className="bg-brand-dark text-white p-1 md:p-1.5 rounded-lg hover:bg-brand-dark/90 transition-colors shrink-0"
                     >
                       <Check size={14} strokeWidth={3} />
                     </button>
@@ -166,10 +164,10 @@ export function PremiumSelect({
                       e.stopPropagation();
                       setIsCustomMode(true);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-black text-brand-dark hover:bg-brand-dark/5 rounded-xl transition-all group"
+                    className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3.5 text-[11px] md:text-sm font-black text-brand-dark hover:bg-brand-dark/5 rounded-xl transition-all group"
                   >
-                    <div className="p-1.5 bg-brand-dark/10 rounded-lg group-hover:bg-brand-dark group-hover:text-white transition-all">
-                      <Pencil size={14} strokeWidth={3} />
+                    <div className="p-1 md:p-1.5 bg-brand-dark/10 rounded-lg group-hover:bg-brand-dark group-hover:text-white transition-all">
+                      <Pencil size={12} md:size={14} strokeWidth={3} />
                     </div>
                     <span>{customPlaceholder}</span>
                   </button>
@@ -186,22 +184,31 @@ export function PremiumSelect({
                   type="button"
                   onClick={() => {
                     onChange(opt.id);
-                    setIsOpen(false);
                     setSearchTerm('');
                   }}
-                  className={`w-full flex items-center justify-between px-6 py-3.5 text-sm font-bold transition-all hover:bg-slate-50 ${
+                  className={`w-full flex items-center justify-between px-4 md:px-6 py-2.5 md:py-3.5 text-xs md:text-sm font-bold transition-all hover:bg-slate-50 ${
                     value === opt.id ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
                   }`}
                 >
                   <span className="truncate pr-4">{opt.name}</span>
-                  {value === opt.id && <Check size={18} strokeWidth={3} className="text-brand-dark shrink-0" />}
+                  {value === opt.id && <Check size={16} md:size={18} strokeWidth={3} className="text-brand-dark shrink-0" />}
                 </button>
               ))
             ) : (
-              <div className="px-6 py-8 text-center">
-                <p className="text-xs font-bold text-slate-400">Nenhum local encontrado</p>
+              <div className="px-6 py-6 md:py-8 text-center">
+                <p className="text-[10px] md:text-xs font-bold text-slate-400">Nenhum local encontrado</p>
               </div>
             )}
+          </div>
+
+          <div className="p-2 md:p-3 bg-slate-50 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 md:py-2.5 bg-brand-dark text-white rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/10 active:scale-95"
+            >
+              Confirmar Local
+            </button>
           </div>
         </div>
       )}
@@ -275,37 +282,49 @@ export function PremiumTimePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] mt-2 bg-white rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 p-2 animate-in fade-in slide-in-from-top-2 duration-200 flex gap-2 h-64 overflow-hidden">
-          <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center mb-2 sticky top-0 bg-white py-1">Horas</p>
-            {hourOptions.map((h) => (
-              <button
-                key={h}
-                type="button"
-                onClick={() => setHour(h)}
-                className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 ${
-                  hours === h ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
-                }`}
-              >
-                {h}
-              </button>
-            ))}
+        <div className="absolute z-[100] mt-2 bg-white rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden min-w-[180px] md:min-w-[200px]">
+          <div className="p-1.5 md:p-2 flex gap-1 md:gap-2 h-[40vh] md:h-64">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-0.5 md:pr-1">
+              <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest text-center mb-1 md:mb-2 sticky top-0 bg-white py-1">Horas</p>
+              {hourOptions.map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setHour(h)}
+                  className={`w-full py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all hover:bg-slate-50 ${
+                    hours === h ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
+                  }`}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+            <div className="w-[1px] bg-slate-100 self-stretch my-2" />
+            <div className="flex-1 overflow-y-auto custom-scrollbar pl-0.5 md:pl-1">
+              <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest text-center mb-1 md:mb-2 sticky top-0 bg-white py-1">Minutos</p>
+              {minuteOptions.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMinute(m)}
+                  className={`w-full py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold transition-all hover:bg-slate-50 ${
+                    minutes === m ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="w-[1px] bg-slate-100 self-stretch my-2" />
-          <div className="flex-1 overflow-y-auto custom-scrollbar pl-1">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center mb-2 sticky top-0 bg-white py-1">Minutos</p>
-            {minuteOptions.map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMinute(m)}
-                className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 ${
-                  minutes === m ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+          
+          <div className="p-2 md:p-3 bg-slate-50 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 md:py-2.5 bg-brand-dark text-white rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/10 active:scale-95"
+            >
+              Confirmar Horário
+            </button>
           </div>
         </div>
       )}
@@ -468,36 +487,36 @@ export function PremiumDatePicker({
       )}
 
       {isOpen && (
-        <div className={`absolute z-[100] mt-2 bg-white rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 p-4 md:p-5 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[300px] md:min-w-[320px] ${align === 'right' ? 'right-0 md:right-0' : 'left-0 md:left-0'} max-sm:fixed max-sm:inset-x-4 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:mt-0`}>
-          <div className="flex items-center justify-between mb-4">
-            <button onClick={handlePrevMonth} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-              <ChevronLeft size={18} strokeWidth={2.5} />
+        <div className={`absolute z-[100] mt-2 bg-white rounded-[20px] md:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-slate-100 p-3 md:p-5 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px] md:min-w-[320px] ${align === 'right' ? 'right-0 md:right-0' : 'left-0 md:left-0'} max-sm:fixed max-sm:inset-x-4 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:mt-0`}>
+          <div className="flex items-center justify-between mb-2 md:mb-4">
+            <button onClick={handlePrevMonth} className="p-1.5 md:p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
+              <ChevronLeft size={16} md:size={18} strokeWidth={2.5} />
             </button>
-            <span className="font-black text-sm uppercase tracking-widest text-slate-900">
+            <span className="font-black text-xs md:text-sm uppercase tracking-widest text-slate-900">
               {MONTHS[month]} {year}
             </span>
-            <button onClick={handleNextMonth} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-              <ChevronRight size={18} strokeWidth={2.5} />
+            <button onClick={handleNextMonth} className="p-1.5 md:p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
+              <ChevronRight size={16} md:size={18} strokeWidth={2.5} />
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 mb-2">
+          <div className="grid grid-cols-7 gap-1 mb-1 md:mb-2">
             {DAYS_SHORT.map(d => (
-              <span key={d} className="text-[10px] font-black text-slate-400 uppercase text-center py-1">
+              <span key={d} className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase text-center py-1">
                 {d}
               </span>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-0.5 md:gap-1">
             {days.map((day, i) => (
               <div key={i} className="aspect-square flex items-center justify-center">
                 {day !== null ? (
                   <button
                     onClick={() => handleSelectDay(day)}
-                    className={`w-full h-full rounded-xl text-xs font-bold transition-all relative flex items-center justify-center ${
+                    className={`w-full h-full rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold transition-all relative flex items-center justify-center ${
                       isSelected(day)
-                        ? 'bg-brand-dark text-white shadow-lg shadow-brand-dark/20 scale-110'
+                        ? 'bg-brand-dark text-white shadow-lg shadow-brand-dark/20 scale-105 md:scale-110'
                         : isToday(day)
                         ? 'bg-brand-dark/10 text-brand-dark hover:bg-brand-dark/20'
                         : 'text-slate-600 hover:bg-slate-50'
@@ -505,7 +524,7 @@ export function PremiumDatePicker({
                   >
                     {day}
                     {hasEvent(day) && !isSelected(day) && (
-                      <div className="absolute bottom-1.5 w-1 h-1 bg-primary rounded-full" />
+                      <div className="absolute bottom-1 md:bottom-1.5 w-0.5 md:w-1 h-0.5 md:h-1 bg-primary rounded-full" />
                     )}
                   </button>
                 ) : null}
@@ -513,11 +532,11 @@ export function PremiumDatePicker({
             ))}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-slate-50 flex items-center justify-between">
-            <button onClick={handleClear} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors px-3 py-2 rounded-lg hover:bg-red-50">
+          <div className="mt-3 md:mt-5 pt-3 md:pt-4 border-t border-slate-50 flex items-center justify-between">
+            <button onClick={handleClear} className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-red-50">
               Limpar
             </button>
-            <button onClick={handleToday} className="text-[10px] font-black uppercase tracking-widest text-brand-dark hover:bg-brand-dark/5 rounded-lg px-4 py-2 transition-all">
+            <button onClick={handleToday} className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-brand-dark hover:bg-brand-dark/5 rounded-lg px-3 md:px-4 py-1.5 md:py-2 transition-all">
               Hoje
             </button>
           </div>
@@ -631,7 +650,7 @@ export function PremiumMultiSelect({
               />
             </div>
           </div>
-          <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <div className="py-1 md:py-2 max-h-[40vh] md:max-h-60 overflow-y-auto custom-scrollbar">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = selectedValues.includes(opt.id);
@@ -640,24 +659,34 @@ export function PremiumMultiSelect({
                     key={opt.id}
                     type="button"
                     onClick={() => toggleOption(opt.id)}
-                    className={`w-full flex items-center justify-between px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 ${
+                    className={`w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold transition-all hover:bg-slate-50 ${
                       isSelected ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
                     }`}
                   >
                     <span className="truncate pr-4">{opt.name}</span>
-                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${
+                    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-md md:rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${
                       isSelected ? 'bg-brand-dark border-brand-dark' : 'border-slate-200'
                     }`}>
-                      {isSelected && <Check size={14} strokeWidth={4} className="text-white" />}
+                      {isSelected && <Check size={12} md:size={14} strokeWidth={4} className="text-white" />}
                     </div>
                   </button>
                 );
               })
             ) : (
-              <div className="px-6 py-8 text-center">
-                <p className="text-xs font-bold text-slate-400">Nenhuma opção encontrada</p>
+              <div className="px-6 py-6 md:py-8 text-center">
+                <p className="text-[10px] md:text-xs font-bold text-slate-400">Nenhuma opção encontrada</p>
               </div>
             )}
+          </div>
+
+          <div className="p-2 md:p-3 bg-slate-50 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="w-full py-2 md:py-2.5 bg-brand-dark text-white rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/10 active:scale-95"
+            >
+              Confirmar Seleção
+            </button>
           </div>
         </div>
       )}
