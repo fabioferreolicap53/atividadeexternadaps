@@ -110,7 +110,10 @@ export default function App() {
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
+    return <Login onLogin={() => {
+      setIsAuthenticated(true);
+      setCurrentPage('dashboard');
+    }} />;
   }
 
   if (isLoading) {
