@@ -14,6 +14,7 @@ interface ProfessionalStatus {
   id: string;
   name: string;
   role: string;
+  careLines?: string[];
   status: 'present' | 'absent' | 'on-duty';
   reason?: string;
   currentActivity?: Activity;
@@ -26,6 +27,7 @@ interface RightSidebarProps {
   onProfessionalClick?: (professional: ProfessionalStatus) => void;
   className?: string;
   selectedDate?: string;
+  careLines?: any[];
 }
 
 export function RightSidebar({ 
@@ -33,7 +35,8 @@ export function RightSidebar({
   onActivityClick, 
   onProfessionalClick, 
   className,
-  selectedDate 
+  selectedDate,
+  careLines = []
 }: RightSidebarProps) {
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
 
@@ -73,7 +76,11 @@ export function RightSidebar({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-white text-xs truncate group-hover/card:text-primary-light transition-colors">{prof.name}</h4>
-                  <p className="text-[8px] sm:text-[9px] text-white/80 font-medium uppercase tracking-wider mt-0.5">{prof.role}</p>
+                  <p className="text-[8px] sm:text-[9px] text-white/80 font-medium uppercase tracking-wider mt-0.5">
+                    {prof.careLines && prof.careLines.length > 0 
+                      ? prof.careLines.map(id => careLines.find(cl => cl.id === id)?.name).filter(Boolean).join(', ')
+                      : prof.role}
+                  </p>
                 </div>
               </div>
 

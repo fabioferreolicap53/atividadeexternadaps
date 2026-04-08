@@ -128,8 +128,12 @@ export function PremiumProfessionalModal({
                 <Briefcase size={20} strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cargo / Função</p>
-                <p className="text-sm font-black text-slate-900 leading-tight">{professional.role}</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Linha de Cuidado</p>
+                <p className="text-sm font-black text-slate-900 leading-tight">
+                  {professional.careLines && professional.careLines.length > 0 
+                    ? professional.careLines.map(id => careLines.find(cl => cl.id === id)?.name).filter(Boolean).join(', ')
+                    : professional.role}
+                </p>
               </div>
             </div>
 

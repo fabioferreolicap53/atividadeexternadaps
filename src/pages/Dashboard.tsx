@@ -231,6 +231,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
               onProfessionalClick={handleOpenProfDetail}
               className="h-full"
               selectedDate={selectedDate}
+              careLines={careLines}
             />
           </div>
         </div>
