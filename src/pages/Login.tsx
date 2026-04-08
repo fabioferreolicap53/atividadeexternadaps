@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, LogIn, CalendarCheck, ShieldCheck } from 'lucide-react';
+import pb from '../lib/pocketbase';
 
 interface LoginProps {
   onLogin: () => void;
@@ -11,20 +12,26 @@ export function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simulação de delay para efeito visual premium
-    setTimeout(() => {
+    try {
+      // Tentativa de login real via PocketBase (Versão Online)
+      await pb.collection('users').authWithPassword(email, password);
+      onLogin();
+    } catch (err: any) {
+      // Fallback para as credenciais padrão (visto na implementação local)
       if (email === 'daps.cap53@gmail.com' && password === 'daps2022') {
+        // Se falhar o PocketBase mas for a credencial mestre, autentica localmente
+        localStorage.setItem('daps_auth', 'true');
         onLogin();
       } else {
         setError('E-mail ou senha incorretos. Tente novamente.');
         setIsLoading(false);
       }
-    }, 800);
+    }
   };
 
   return (

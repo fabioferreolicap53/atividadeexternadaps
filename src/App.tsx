@@ -34,11 +34,9 @@ export interface Professional {
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('daps_auth') === 'true';
+    return pb.authStore.isValid || localStorage.getItem('daps_auth') === 'true';
   });
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>(() => {
-    return (localStorage.getItem('daps_current_page') as any) || 'dashboard';
-  });
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>('dashboard');
   const [activitiesFormOpen, setActivitiesFormOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +146,11 @@ export default function App() {
         onOpenActivitiesForm={handleOpenActivitiesWithForm}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={() => {
+          pb.authStore.clear();
+          localStorage.removeItem('daps_auth');
+          setIsAuthenticated(false);
+        }}
       />
       
       <main className="lg:ml-64 flex-1 flex flex-col min-h-screen">
