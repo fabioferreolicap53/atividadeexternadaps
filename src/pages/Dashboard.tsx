@@ -248,6 +248,7 @@ export function Dashboard({ activities: ACTIVITIES_MOCK, professionals: PROFESSI
         onClose={() => setIsProfModalOpen(false)}
         professional={selectedProfessional}
         careLines={careLines}
+        isToday={isToday}
       />
     </div>
   );

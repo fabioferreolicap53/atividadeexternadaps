@@ -80,7 +80,9 @@ export function RightSidebar({
               {/* Fluxo de Atividades do Dia para este profissional */}
               {prof.allDailyActivities && prof.allDailyActivities.length > 0 && (
                 <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-white/10 space-y-1.5 sm:space-y-2">
-                  <p className="text-[7px] sm:text-[8px] text-white/50 font-black uppercase tracking-widest">Agenda Externa (Hoje):</p>
+                  <p className="text-[7px] sm:text-[8px] text-white/50 font-black uppercase tracking-widest">
+                    Agenda Externa {isToday ? '(Hoje)' : ''}:
+                  </p>
                   <div className="space-y-1 sm:space-y-1.5">
                     {prof.allDailyActivities.map((act) => (
                       <div 

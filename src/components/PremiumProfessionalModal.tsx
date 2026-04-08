@@ -39,13 +39,15 @@ interface PremiumProfessionalModalProps {
   onClose: () => void;
   professional: ProfessionalStatus | null;
   careLines: any[];
+  isToday?: boolean;
 }
 
 export function PremiumProfessionalModal({ 
   isOpen, 
   onClose, 
   professional,
-  careLines
+  careLines,
+  isToday = true
 }: PremiumProfessionalModalProps) {
   if (!isOpen || !professional) return null;
 
@@ -160,7 +162,9 @@ export function PremiumProfessionalModal({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Calendar size={18} className="text-slate-400" />
-                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Agenda Externa (Hoje)</h4>
+                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">
+                  Agenda Externa {isToday ? '(Hoje)' : ''}
+                </h4>
               </div>
               <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
                 {professional.allDailyActivities?.length || 0} Registros

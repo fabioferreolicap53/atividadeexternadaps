@@ -90,7 +90,7 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
               
               <div 
                 onClick={() => onActivityClick?.(activity)}
-                className={`p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] border transition-all duration-500 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-8 w-full relative overflow-hidden ${
+                className={`p-4 sm:p-6 md:p-8 rounded-[24px] sm:rounded-[32px] border transition-all duration-500 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 lg:gap-8 w-full relative overflow-hidden ${
                   isActive 
                     ? 'bg-white/[0.12] border-primary/50 shadow-[0_20px_50px_rgba(0,0,0,0.3)] scale-[1.02] sm:scale-[1.03] z-20' 
                     : 'bg-white/[0.04] border-white/5 group-hover:border-primary/30 group-hover:bg-white/[0.08] group-hover:scale-[1.01]'
@@ -101,8 +101,8 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent pointer-events-none" />
                 )}
                 
-                <div className="flex-1 space-y-3 sm:space-y-4 relative z-10">
-                  <h4 className={`font-black text-sm sm:text-base md:text-2xl transition-all duration-500 leading-tight ${isActive ? 'text-white drop-shadow-md' : 'text-white/80 group-hover:text-white'}`}>
+                <div className="flex-1 min-w-0 space-y-3 sm:space-y-4 relative z-10">
+                  <h4 className={`font-black text-sm sm:text-base md:text-xl lg:text-2xl transition-all duration-500 leading-tight ${isActive ? 'text-white drop-shadow-md' : 'text-white/80 group-hover:text-white'}`}>
                     {activity.description}
                   </h4>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[9px] sm:text-[11px] md:text-xs text-white/50 font-bold uppercase tracking-widest transition-all duration-500">
@@ -112,18 +112,18 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                     </span>
                     <span className={`flex items-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all duration-500 ${isActive ? 'bg-primary/10 border-primary/20 text-primary-light' : 'bg-white/5 border-white/5'}`}>
                       <MapPin size={14} className={isActive ? 'text-primary-light' : 'text-white/30'} /> 
-                      <span className="truncate max-w-[100px] sm:max-w-none">{activity.location}</span>
+                      <span className="truncate max-w-[120px] sm:max-w-none">{activity.location}</span>
                     </span>
                     <span className={`flex items-start gap-2.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all duration-500 ${isActive ? 'bg-primary/10 border-primary/20 text-primary-light' : 'bg-white/5 border-white/5'}`}>
                       <Users size={14} className={`mt-1 ${isActive ? 'text-primary-light' : 'text-white/30'}`} /> 
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-1.5 min-w-0">
                         {activity.professionalIds.map((id, i) => {
                           const prof = professionals.find(p => p.id === id);
                           if (!prof) return null;
                           
                           return (
-                            <div key={id} className="flex flex-col">
-                              <span className={`text-[10px] sm:text-xs font-black uppercase tracking-tight ${isActive ? 'text-white' : 'text-white/80'}`}>
+                            <div key={id} className="flex flex-col min-w-0">
+                              <span className={`text-[10px] sm:text-xs font-black uppercase tracking-tight truncate ${isActive ? 'text-white' : 'text-white/80'}`}>
                                 {prof.name}
                               </span>
                               {prof.careLines && prof.careLines.length > 0 && (
@@ -131,7 +131,7 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                                   {prof.careLines.map(lineId => {
                                     const line = careLines.find(l => l.id === lineId);
                                     return line ? (
-                                      <span key={lineId} className="text-[7px] sm:text-[8px] font-bold opacity-60 italic uppercase tracking-tighter leading-none">
+                                      <span key={lineId} className="text-[7px] sm:text-[8px] font-bold opacity-60 italic uppercase tracking-tighter leading-none truncate max-w-[100px] md:max-w-none">
                                         {line.name}
                                       </span>
                                     ) : null;
@@ -146,7 +146,7 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                   </div>
                 </div>
                 
-                <div className="shrink-0 flex items-center justify-start md:justify-end min-w-0 md:min-w-[140px] relative z-10">
+                <div className="shrink-0 flex items-center justify-start lg:justify-end min-w-0 lg:min-w-[140px] relative z-10">
                   {isActive ? (
                     <div className="flex flex-col items-center gap-2">
                       <div className="relative group/badge">
@@ -159,10 +159,10 @@ export function Timeline({ onActivityClick, activities, professionals, careLines
                   ) : !isPast ? (
                     <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-white/5 hover:bg-primary hover:text-white text-white/70 rounded-xl sm:rounded-2xl border border-white/10 transition-all duration-300 shadow-md group/btn cursor-pointer">
                       <Info size={14} className="text-white/30 group-hover/btn:text-white transition-colors" />
-                      <span className="text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">VER DETALHES</span>
+                      <span className="text-[9px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] whitespace-nowrap">VER DETALHES</span>
                     </div>
                   ) : (
-                    <span className="text-[8px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Concluído</span>
+                    <span className="text-[8px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.2em] sm:tracking-[0.3em] whitespace-nowrap">Concluído</span>
                   )}
                 </div>
               </div>

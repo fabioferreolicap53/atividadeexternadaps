@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
+import { PremiumPasswordModal } from '../components/PremiumPasswordModal';
 import { CareLine, Professional } from '../App';
 import pb from '../lib/pocketbase';
 
@@ -39,6 +40,10 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [profToDelete, setProfToDelete] = useState<Professional | null>(null);
   
+  // Password validation states
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: 'edit' | 'delete'; data?: any } | null>(null);
+  
   const [searchTerm, setSearchTerm] = useState('');
 
   // Form states
@@ -47,15 +52,32 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
 
   const handleOpenForm = (professional?: Professional) => {
     if (professional) {
+      setPendingAction({ type: 'edit', data: professional });
+      setIsPasswordModalOpen(true);
+      return;
+    }
+    
+    setEditingId(null);
+    setName('');
+    setSelectedCareLines([]);
+    setIsFormOpen(true);
+  };
+
+  const handlePasswordConfirmed = () => {
+    if (!pendingAction) return;
+
+    if (pendingAction.type === 'edit') {
+      const professional = pendingAction.data as Professional;
       setEditingId(professional.id);
       setName(professional.name);
       setSelectedCareLines(professional.careLines || []);
-    } else {
-      setEditingId(null);
-      setName('');
-      setSelectedCareLines([]);
+      setIsFormOpen(true);
+    } else if (pendingAction.type === 'delete') {
+      setProfToDelete(pendingAction.data);
+      setIsDeleteModalOpen(true);
     }
-    setIsFormOpen(true);
+    
+    setPendingAction(null);
   };
 
   const handleCloseForm = () => {
@@ -102,8 +124,8 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
   };
 
   const handleDelete = (prof: Professional) => {
-    setProfToDelete(prof);
-    setIsDeleteModalOpen(true);
+    setPendingAction({ type: 'delete', data: prof });
+    setIsPasswordModalOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -240,6 +262,21 @@ export function Professionals({ professionals, setProfessionals, careLines }: Pr
         title="Remover Profissional?"
         description="Você está prestes a remover este profissional e todas as suas atribuições do sistema."
         itemName={profToDelete?.name}
+      />
+
+      <PremiumPasswordModal 
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setPendingAction(null);
+        }}
+        onConfirm={handlePasswordConfirmed}
+        title={pendingAction?.type === 'edit' ? 'Autorizar Edição' : 'Autorizar Exclusão'}
+        description={pendingAction?.type === 'edit' 
+          ? 'Para editar os dados deste profissional, insira sua senha de acesso para confirmar sua identidade.' 
+          : 'Para remover este profissional do sistema, é necessária a validação da sua senha de login.'
+        }
+        actionLabel={pendingAction?.type === 'edit' ? 'Liberar Edição' : 'Liberar Exclusão'}
       />
 
       {/* Form Modal */}

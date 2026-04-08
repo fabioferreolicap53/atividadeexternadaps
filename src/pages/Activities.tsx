@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { PremiumSelect, PremiumDatePicker, PremiumTimePicker, PremiumMultiSelect } from '../components/PremiumSelect';
 import { PremiumConfirmModal } from '../components/PremiumConfirmModal';
+import { PremiumPasswordModal } from '../components/PremiumPasswordModal';
 import pb from '../lib/pocketbase';
 
 interface Activity {
@@ -58,6 +59,10 @@ export function Activities({
   // Delete confirmation states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
+  
+  // Password validation states
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: 'edit' | 'delete'; data?: any } | null>(null);
   
   // Search and Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,6 +111,28 @@ export function Activities({
 
   const handleOpenForm = (activity?: Activity) => {
     if (activity) {
+      // Se for edição, solicita senha primeiro
+      setPendingAction({ type: 'edit', data: activity });
+      setIsPasswordModalOpen(true);
+      return;
+    }
+    
+    // Para nova atividade, abre direto
+    setEditingId(null);
+    setDate(new Date().toISOString().split('T')[0]);
+    setStartTime('08:00');
+    setEndTime('10:00');
+    setLocation('');
+    setDescription('');
+    setProfessionalIds([]);
+    setIsFormOpen(true);
+  };
+
+  const handlePasswordConfirmed = () => {
+    if (!pendingAction) return;
+
+    if (pendingAction.type === 'edit') {
+      const activity = pendingAction.data as Activity;
       setEditingId(activity.id);
       setDate(activity.date);
       setStartTime(activity.startTime);
@@ -113,16 +140,13 @@ export function Activities({
       setLocation(activity.location);
       setDescription(activity.description);
       setProfessionalIds(activity.professionalIds);
-    } else {
-      setEditingId(null);
-      setDate(new Date().toISOString().split('T')[0]);
-      setStartTime('08:00');
-      setEndTime('10:00');
-      setLocation('');
-      setDescription('');
-      setProfessionalIds([]);
+      setIsFormOpen(true);
+    } else if (pendingAction.type === 'delete') {
+      setActivityToDelete(pendingAction.data);
+      setIsDeleteModalOpen(true);
     }
-    setIsFormOpen(true);
+    
+    setPendingAction(null);
   };
 
   const handleCloseForm = () => {
@@ -173,8 +197,8 @@ export function Activities({
   };
 
   const handleDelete = (activity: Activity) => {
-    setActivityToDelete(activity);
-    setIsDeleteModalOpen(true);
+    setPendingAction({ type: 'delete', data: activity });
+    setIsPasswordModalOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -471,6 +495,21 @@ export function Activities({
         description="Você está prestes a remover este agendamento do sistema. Esta ação requer atenção especial."
         itemName={activityToDelete ? `${activityToDelete.description} (${activityToDelete.date.split('-').reverse().join('/')})` : ''}
         isDeleting={isDeleting}
+      />
+
+      <PremiumPasswordModal 
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setPendingAction(null);
+        }}
+        onConfirm={handlePasswordConfirmed}
+        title={pendingAction?.type === 'edit' ? 'Autorizar Edição' : 'Autorizar Exclusão'}
+        description={pendingAction?.type === 'edit' 
+          ? 'Para editar um registro já lançado, insira sua senha de acesso para confirmar sua identidade.' 
+          : 'Para excluir este registro do sistema, é necessária a validação da sua senha de login.'
+        }
+        actionLabel={pendingAction?.type === 'edit' ? 'Liberar Edição' : 'Liberar Exclusão'}
       />
 
       {/* Form Modal */}
