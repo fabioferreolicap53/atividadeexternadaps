@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, X, ShieldCheck, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Lock, X, ShieldCheck, AlertCircle, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 interface PremiumPasswordModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ export function PremiumPasswordModal({
   actionLabel = 'Confirmar Operação'
 }: PremiumPasswordModalProps) {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -26,6 +27,7 @@ export function PremiumPasswordModal({
   useEffect(() => {
     if (!isOpen) {
       setPassword('');
+      setShowPassword(false);
       setError('');
       setIsVerifying(false);
     }
@@ -85,16 +87,23 @@ export function PremiumPasswordModal({
               <div className="relative group">
                 <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${error ? 'text-error' : 'text-slate-300 group-focus-within:text-brand-dark'}`} size={20} />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoFocus
-                  className={`w-full bg-slate-50 border-2 rounded-2xl py-4 pl-12 pr-4 text-slate-900 placeholder:text-slate-300 outline-none transition-all font-bold text-sm ${
+                  className={`w-full bg-slate-50 border-2 rounded-2xl py-4 pl-12 pr-12 text-slate-900 placeholder:text-slate-300 outline-none transition-all font-bold text-sm ${
                     error ? 'border-error/30 bg-error/5 focus:border-error' : 'border-slate-100 focus:border-brand-dark focus:bg-white'
                   }`}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-brand-dark transition-colors"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
               {error && (
                 <div className="flex items-center gap-1.5 mt-2 ml-1 animate-in slide-in-from-top-1">
