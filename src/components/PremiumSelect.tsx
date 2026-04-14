@@ -21,7 +21,6 @@ interface PremiumSelectProps {
   icon: any;
   placeholder?: string;
   align?: 'left' | 'right';
-  showSearch?: boolean;
   onCustomValue?: (val: string) => void;
   customPlaceholder?: string;
 }
@@ -34,7 +33,6 @@ export function PremiumSelect({
   icon: Icon,
   placeholder = "Selecione...",
   align = 'left',
-  showSearch = false,
   onCustomValue,
   customPlaceholder = "Digitar local personalizado..."
 }: PremiumSelectProps) {
@@ -101,21 +99,19 @@ export function PremiumSelect({
 
       {isOpen && (
         <div className={`absolute z-[100] left-0 right-0 mt-2 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
-          {showSearch && (
-            <div className="p-3 border-b border-slate-50">
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar local..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
+          <div className="p-3 border-b border-slate-50">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
-          )}
+          </div>
 
           <div className="py-1 max-h-[40vh] md:max-h-72 overflow-y-auto custom-scrollbar">
             {onCustomValue && (
@@ -135,6 +131,7 @@ export function PremiumSelect({
                           if (customInputValue.trim()) {
                             onChange(customInputValue.trim());
                             setIsCustomMode(false);
+                            setIsOpen(false);
                             setCustomInputValue('');
                           }
                         }
@@ -149,6 +146,7 @@ export function PremiumSelect({
                         if (customInputValue.trim()) {
                           onChange(customInputValue.trim());
                           setIsCustomMode(false);
+                          setIsOpen(false);
                           setCustomInputValue('');
                         }
                       }}
@@ -185,6 +183,7 @@ export function PremiumSelect({
                   onClick={() => {
                     onChange(opt.id);
                     setSearchTerm('');
+                    setIsOpen(false);
                   }}
                   className={`w-full flex items-center justify-between px-4 md:px-6 py-2.5 md:py-3.5 text-xs md:text-sm font-bold transition-all hover:bg-slate-50 ${
                     value === opt.id ? 'text-brand-dark bg-brand-dark/5' : 'text-slate-600'
@@ -196,19 +195,9 @@ export function PremiumSelect({
               ))
             ) : (
               <div className="px-6 py-6 md:py-8 text-center">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400">Nenhum local encontrado</p>
+                <p className="text-[10px] md:text-xs font-bold text-slate-400">Nenhuma opção encontrada</p>
               </div>
             )}
-          </div>
-
-          <div className="p-2 md:p-3 bg-slate-50 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="w-full py-2 md:py-2.5 bg-brand-dark text-white rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/10 active:scale-95"
-            >
-              Confirmar Local
-            </button>
           </div>
         </div>
       )}
