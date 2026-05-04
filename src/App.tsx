@@ -36,7 +36,9 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return pb.authStore.isValid || localStorage.getItem('daps_auth') === 'true';
   });
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'professionals' | 'activities' | 'settings'>(() => {
+    return (localStorage.getItem('daps_current_page') as any) || 'dashboard';
+  });
   const [activitiesFormOpen, setActivitiesFormOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +47,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('daps_auth', isAuthenticated.toString());
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('daps_current_page', currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     localStorage.setItem('daps_current_page', currentPage);
