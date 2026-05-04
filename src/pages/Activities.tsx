@@ -243,25 +243,34 @@ export function Activities({
   };
 
   const filteredActivities = useMemo(() => {
-    return activities.filter((a: Activity) => {
-      // Search term
-      const matchesSearch = 
-        a.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.professionalIds.some((pid: string) => 
-          PROFESSIONALS_MOCK.find(p => p.id === pid)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+    return activities
+      .filter((a: Activity) => {
+        // Search term
+        const matchesSearch = 
+          a.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.professionalIds.some((pid: string) => 
+            PROFESSIONALS_MOCK.find(p => p.id === pid)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
 
-      // Professional filter
-      const matchesProfessional = filterProfessionalId === 'all' || a.professionalIds.includes(filterProfessionalId);
+        // Professional filter
+        const matchesProfessional = filterProfessionalId === 'all' || a.professionalIds.includes(filterProfessionalId);
 
-      // Date range filter
-      const activityDate = new Date(a.date);
-      const matchesStartDate = !filterStartDate || activityDate >= new Date(filterStartDate);
-      const matchesEndDate = !filterEndDate || activityDate <= new Date(filterEndDate);
+        // Date range filter
+        const activityDate = new Date(a.date);
+        const matchesStartDate = !filterStartDate || activityDate >= new Date(filterStartDate);
+        const matchesEndDate = !filterEndDate || activityDate <= new Date(filterEndDate);
 
-      return matchesSearch && matchesProfessional && matchesStartDate && matchesEndDate;
-    });
+        return matchesSearch && matchesProfessional && matchesStartDate && matchesEndDate;
+      })
+      .sort((a, b) => {
+        // Ordenação por data crescente
+        const dateCompare = a.date.localeCompare(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        
+        // Se data igual, ordena por horário de início
+        return a.startTime.localeCompare(b.startTime);
+      });
   }, [activities, searchTerm, filterProfessionalId, filterStartDate, filterEndDate]);
 
   const locationOptions = [
@@ -319,9 +328,10 @@ export function Activities({
       </header>
 
       {/* Toolbar and Filters */}
-      <div className="bg-surface-container-low p-4 md:p-6 rounded-[32px] space-y-6 shadow-sm border border-outline-variant/5">
-        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-          <div className="relative flex-1 group">
+      <div className="bg-surface-container-low p-4 md:p-6 rounded-[32px] shadow-sm border border-outline-variant/5">
+        <div className="flex flex-col xl:flex-row gap-4 items-center">
+          {/* Search Box */}
+          <div className="w-full xl:flex-1 relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-dark transition-colors" size={20} />
             <input 
               type="text" 
@@ -332,7 +342,8 @@ export function Activities({
             />
           </div>
           
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+          {/* Filters Container */}
+          <div className="w-full xl:w-auto flex flex-col md:flex-row items-center gap-4">
             <div className="w-full md:w-[260px]">
               <PremiumSelect 
                 label="" 
@@ -346,28 +357,28 @@ export function Activities({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] items-center gap-3">
-              <div className="w-full sm:w-[160px]">
+            <div className="flex items-center justify-between md:justify-start bg-white border-[2.5px] border-slate-200 rounded-2xl h-[56px] px-2 gap-1 sm:gap-2 shadow-sm focus-within:border-brand-dark focus-within:ring-4 focus-within:ring-brand-dark/5 transition-all w-full md:w-auto">
+              <div className="flex-1 md:w-[110px] lg:w-[130px]">
                 <PremiumDatePicker 
                   value={filterStartDate}
                   onChange={setFilterStartDate}
                   placeholder="Início"
                   icon={Calendar}
                   align="right"
+                  variant="inline"
                 />
               </div>
               
-              <div className="hidden sm:flex items-center justify-center">
-                <ArrowRight size={16} className="text-slate-300 shrink-0" />
-              </div>
+              <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
               
-              <div className="w-full sm:w-[160px]">
+              <div className="flex-1 md:w-[110px] lg:w-[130px]">
                 <PremiumDatePicker 
                   value={filterEndDate}
                   onChange={setFilterEndDate}
                   placeholder="Fim"
                   icon={Calendar}
                   align="right"
+                  variant="inline"
                 />
               </div>
             </div>
@@ -375,9 +386,11 @@ export function Activities({
             {(searchTerm || filterProfessionalId !== 'all' || filterStartDate || filterEndDate) && (
               <button 
                 onClick={clearFilters}
-                className="text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 px-6 py-3 rounded-xl transition-all shrink-0 bg-primary/5 border border-primary/10"
+                className="h-[56px] px-6 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-2xl transition-all flex items-center justify-center group w-full md:w-auto"
+                title="Limpar Filtros"
               >
-                Limpar
+                <X size={18} className="group-hover:rotate-90 transition-transform" />
+                <span className="ml-2 text-[10px] font-black uppercase tracking-widest">Limpar</span>
               </button>
             )}
           </div>
@@ -591,7 +604,6 @@ export function Activities({
                     onChange={setLocation}
                     options={locationOptions}
                     icon={MapPin}
-                    showSearch={true}
                     onCustomValue={setLocation}
                     customPlaceholder="Digitar local personalizado..."
                   />
